@@ -8,18 +8,23 @@ This project is not intended to be a ready-to-deploy solution.  However, if you 
 ##Features
 ###VMware vSphere ESX Host Monitoring
 ![ESX Host Gadget](readme-images/host.png)
+
 This code will talk to a VMware vSphere vCenter server using VMware APIs to get data about ESX hosts.  Items are sorted based on top CPU usage over a 30 minute period.
 ###VMware vSphere VM Monitoring
 ![VMware VM Gadget](readme-images/vm.png)
+
 This code will talk to a VMware vSphere vCenter server using VMware APIs to get data about the top ESX VMs.  Items are sorted based on top CPU usage over a 30 minute period.
 ###SNMP Network Monitoring
 ![SNMP Network Monitoring Gadget](readme-images/snmp.png)
+
 This code generates JSON data only that is consumed by the Statusboard iPad app's built in graph function.
 ###SNMP Temperature Gadget
 ![SNMP Temperature Gadget](readme-images/temp.png)
+
 This code talks to a couple different APC devices to pull in temperature, humidity, voltage and runtime data.
 ###EMC VNX Monitoring
 ![EMC VNX Monitoring Gadget](readme-images/vnx.png)
+
 This code talks to an EMC VNX Reporting and Monitoring web server to pull down performance data.  There is probably a better way to do this, but I was in a hurry.
 
 ## Code Layout
