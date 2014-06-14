@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="EMC VNX Performance" data-allows-resizing="YES" data-min-size="6,4" data-allows-scrolling="NO">
+
+
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+    <script type="text/javascript" src="/static/js/Chart.min.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+
+		table {
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;		   
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+            margin: 5px 2px 5px 5px;
+            border-spacing: 2px;
+
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: center;
+            vertical-align: bottom;
+		}
+
+        .io_read {
+            background: url(/static/images/up.png) no-repeat;
+            background-size: 24px;
+            background-position: 0 10px;
+            width: 24px;
+        }		
+
+        .io_write {
+            background: url(/static/images/down.png) no-repeat;
+            background-size: 24px;
+            background-position: 0 10px;
+            width: 24px;
+        }
+
+
+
+		.sparkline {
+			margin: 2px 2px 2px 2px;
+            vertical-align: middle;
+
+		}
+        .data_name {
+            text-align: left;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .current_value {
+            color: rgb(100,112,118);
+            text-transform: none;
+            text-align: left;
+            width: 35px;
+        }
+
+
+        .read_colors {
+            color: rgb(255,198,0);
+        }
+
+        .write_colors {
+            color: rgb(0,108,230);
+        }
+
+        .key {
+            font-size: 12px;
+            text-transform: none;
+        }
+
+        .lun_icon {
+            height: 11px;
+            padding: 0 2px 0 0;
+        }
+
+        .lun_details {
+            -webkit-border-radius: 4px;
+            border-radius: 12px;
+            border: 1px solid #222222;
+            width: 98%;
+            font-size: 12px
+
+        }
+
+        .lun_name {
+            text-align: left;
+        }
+        .lun_details {
+            text-transform: none;
+        }
+
+        .lun_stats{
+            color: rgb(100,112,118)
+        }
+        .lun_stats span {
+            color: #ffffff
+        }
+
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+
+	</style>
+
+
+    <script type="text/javascript">
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // {"block_read": [123,125,133,114,142,113,121,231],
+                // "block_write": [123,125,133,114,142,113,121,231],
+                // "file_read": [123,125,133,114,142,113,121,231],
+                // "file_write": [123,125,133,114,142,113,121,231],
+                // "top_luns": [{"iops": 30.33, "name": "CIFS_Replica_9", "utilization": 1.2, "bandwidth": 0.1, "response_time": 0.8},    ]
+                //  }
+                // error json format:
+                // {"error": "details"}
+
+                if ("error" in ajaxdata) {
+                    $('#errorText').html(ajaxdata["error"]);
+                    $('#errorText').css("display", "inline");
+                    $('#vnx').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#vnx').css("display", "static");
+
+                    // Update sparklines to reflect latest data
+
+                    $('#block_write_spark').sparkline(ajaxdata["block_write"], {
+                        type: 'line',
+                        height: '38px',
+                        width: '160px',
+                        lineColor: '#006ce6',
+                        lineWidth: 1,
+                        fillColor: '#006ce6',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 0,
+                        chartRangeMin: 0,
+                        chartRangeMax: 1000
+                        }
+                    );
+                    $('#block_read_spark').sparkline(ajaxdata["block_read"], {
+                        type: 'line',
+                        height: '38px',
+                        width: '160px',
+                        lineColor: '#ffc600',
+                        lineWidth: 1,
+                        fillColor: '#ffc600',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 0,
+                        chartRangeMin: 0,
+                        chartRangeMax: 1000
+                        }
+                    );
+                    $('#file_write_spark').sparkline(ajaxdata["file_write"], {
+                        type: 'line',
+                        height: '38px',
+                        width: '160px',
+                        lineColor: '#006ce6',
+                        lineWidth: 1,
+                        fillColor: '#006ce6',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 0,
+                        chartRangeMin: 0,
+                        chartRangeMax: 1000
+                        }
+                    );
+                    $('#file_read_spark').sparkline(ajaxdata["file_read"], {
+                        type: 'line',
+                        height: '38px',
+                        width: '160px',
+                        lineColor: '#ffc600',
+                        lineWidth: 1,
+                        fillColor: '#ffc600',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 0,
+                        chartRangeMin: 0,
+                        chartRangeMax: 1000
+                        }
+                    );
+
+
+                    // Update the current numeric value field
+                    $('#block_read_last').html(ajaxdata["block_read"].pop());
+                    $('#block_write_last').html(ajaxdata["block_write"].pop());
+                    $('#file_read_last').html(ajaxdata["file_read"].pop());
+                    $('#file_write_last').html(ajaxdata["file_write"].pop());
+
+
+                    // Process LUNs
+                    var top_luns = ajaxdata["top_luns"];
+                    for (var i=0; i<top_luns.length; i++) {
+                        $('#lun' + i + '_name').html(top_luns[i]["name"]);
+                        $('#lun' + i + '_utilization').html(top_luns[i]["utilization"]);
+                        $('#lun' + i + '_iops').html(top_luns[i]["iops"]);
+                        $('#lun' + i + '_bandwidth').html(top_luns[i]["bandwidth"]);
+                        $('#lun' + i + '_response_time').html(top_luns[i]["response_time"]);
+                    }
+                }
+
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) { // If ajax fails, show error msg
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#vnx').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/vnx_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('vnx_table1').style.backgroundColor = 'black';
+            document.getElementById('vnx_table2').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+    </script>
+
+</head>
+
+<body onload="init()"><div id="errorText"></div>
+<div id="vnx"><table id="vnx_table1">
+<tbody>
+<tr><td colspan="4" class="header">EMC VNX 5500 - Charlotte<br/>
+    <div class="key"><span class="read_colors">Read</span> | <span class="write_colors">Write</span> Operations per second</div>
+</td></tr>
+<tr>
+    <td class="data_name">Block</td>
+    <td><span id="block_read_spark" class="sparkline"></span></td>
+
+    <td class="current_value"><span id="block_read_last"></span></td>
+    <td><span id="block_write_spark" class="sparkline"></span></td>
+
+    <td class="current_value"><span id="block_write_last"></span></td>
+</tr>
+<tr>
+    <td class="data_name">File</td>
+    <td><span id="file_read_spark" class="sparkline"></span></td>
+
+    <td class="current_value"><span id="file_read_last"></span></td>
+    <td><span id="file_write_spark" class="sparkline"></span></td>    
+
+    <td class="current_value"><span id="file_write_last"></span></td>
+</tr>
+</tbody></table>
+<table id="vnx_table2" class="lun_details">
+<tbody>
+<tr><th>Top LUNs</th><th>Utilization</th><th>io/sec</th><th>Bandwidth</th><th>Response</th></tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun0_name"></span></td>
+    <td class="lun_stats"><span id="lun0_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun0_iops"></span></td>
+    <td class="lun_stats"><span id="lun0_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun0_response_time"></span> ms</td>
+</tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun1_name"></span></td>
+    <td class="lun_stats"><span id="lun1_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun1_iops"></span></td>
+    <td class="lun_stats"><span id="lun1_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun1_response_time"></span> ms</td>
+</tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun2_name"></span></td>
+    <td class="lun_stats"><span id="lun2_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun2_iops"></span></td>
+    <td class="lun_stats"><span id="lun2_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun2_response_time"></span> ms</td>
+</tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun3_name"></span></td>
+    <td class="lun_stats"><span id="lun3_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun3_iops"></span></td>
+    <td class="lun_stats"><span id="lun3_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun3_response_time"></span> ms</td>
+</tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun4_name"></span></td>
+    <td class="lun_stats"><span id="lun4_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun4_iops"></span></td>
+    <td class="lun_stats"><span id="lun4_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun4_response_time"></span> ms</td>
+</tr>
+<tr>
+    <td class="lun_name"><img src="/static/images/db.png" alt="" class="lun_icon" /><span id="lun5_name"></span></td>
+    <td class="lun_stats"><span id="lun5_utilization"></span>%</td>
+    <td class="lun_stats"><span id="lun5_iops"></span></td>
+    <td class="lun_stats"><span id="lun5_bandwidth"></span> MB/s</td>
+    <td class="lun_stats"><span id="lun5_response_time"></span> ms</td>
+</tr>
+</table></div>
+
+</body></html>
+

@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="VMware VM Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
+
+
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 36px;
+		    color: white;
+		}
+		
+		h2 {
+		    font-size: 12px;
+		    color: rgb(100,100,100);
+		}
+			
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 8px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+        
+        .status-gray {
+            background: url(/static/images/0unknown.png) no-repeat;
+            background-size: 16px;
+            width: 20px;
+        }		
+		.status-green {
+			background: url(/static/images/1normal.png) no-repeat;
+			background-size: 16px;            
+			width: 20px;
+		}
+		.status-yellow {
+			background: url(/static/images/2warning.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.status-red {
+			background: url(/static/images/3alert.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.sparkline {
+			padding: 0 2px 0 2px;	
+            text-align: center;					
+		}
+        .vm_name {
+            text-align: left; 
+            margin-top: 2px;            
+            width: 100px;
+            display:inline-block;   
+        }
+
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .value {
+            display: none;
+        }
+        .value:after {
+            content: ' mhz';
+            margin-left: 0.1em;
+            text-transform: none; 
+            color: rgb(100,112,118);
+        }  
+               
+
+
+	</style>
+
+
+    <script type="text/javascript">
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // { "vms": [{"status": 1, "host_cpu_mhz": 1999, "cpu_count": 4, "name": "MyServerName1", "cpu": [1539,1234,2221,1211]}, ...   ]}
+                // error json format:
+                // { "vms": [{"error": "details"}]}
+
+                vm_array = ajaxdata['vms'];
+                if ("error" in vm_array[0]) {
+                    $('#errorText').html(vm_array[0]["error"]);
+                    $('#errorText').css("display", "static");
+                    $('#vm_table').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#vm_table').css("display", "static");                    
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<vm_array.length; i++) {
+                        $('#vm' + i + '_name').html(vm_array[i]["name"]);
+
+                        // For the status, we change the class of the TD
+                        if (vm_array[i]["status"] == 1) {
+                            $('#vm' + i + '_status').removeClass("status-gray status-red status-yellow").addClass("status-green");
+                        } else {
+                            if (vm_array[i]["status"] == 2) {
+                                $('#vm' + i + '_status').removeClass("status-gray status-red status-green").addClass("status-yellow");
+                            } else {
+                                if (vm_array[i]["status"] == 3) {
+                                    $('#vm' + i + '_status').removeClass("status-gray status-green status-yellow").addClass("status-red");
+                                } else {
+                                    $('#vm' + i + '_status').removeClass("status-red status-green status-yellow").addClass("status-gray");
+                                }
+                            }
+                        }
+
+                        // Update sparkline to reflect latest CPU data
+
+                        $('#vm' + i + '_spark').sparkline(vm_array[i]["cpu"], {
+                            type: 'line',
+                            height: '20px',
+                            width: '100px',
+                            lineColor: '#aeb7bc',
+                            lineWidth: 1.5,
+                            fillColor: 'transparent',
+                            minSpotColor: 'transparent',
+                            maxSpotColor: 'transparent',
+                            spotRadius: 2
+                            }
+                        );
+
+                        // Update the current numeric value field
+                        var current_cpu = vm_array[i]["cpu"].pop();
+                        $('#vm' + i + '_value').html(current_cpu);
+                        $('#vm' + i + '_value').css("display", "inline");
+
+                        // Update the current percent                        
+                        var cpu_percent = (current_cpu / (vm_array[i]["host_cpu_mhz"] * vm_array[i]["cpu_count"]))
+                        var cpu_percent = Math.round(cpu_percent * 100);
+                        $('#vm' + i + '_percent').html(cpu_percent + '%');
+                        
+                    }
+                }
+
+            } else if (xmlHTTP.status==404) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "static");
+                $('#vm_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/view_vm_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('vm_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<table id="vm_table">
+<tbody>
+<tr><td colspan="5" class="header">VMware TOP VMs</td></tr>
+<tr>
+    <td id="vm0_status"></td>
+    <td id="vm0_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm0_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm0_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm0_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm1_status"></td>
+    <td id="vm1_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm1_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm1_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm1_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm2_status"></td>
+    <td id="vm2_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm2_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm2_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm2_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm3_status"></td>
+    <td id="vm3_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm3_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm3_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm3_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm4_status"></td>
+    <td id="vm4_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm4_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm4_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm4_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm5_status"></td>
+    <td id="vm5_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm5_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm5_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm5_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm6_status"></td>
+    <td id="vm6_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm6_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm6_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm6_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm7_status"></td>
+    <td id="vm7_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm7_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm7_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm7_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm8_status"></td>
+    <td id="vm8_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm8_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm8_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm8_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm9_status"></td>
+    <td id="vm9_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm9_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm9_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm9_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm10_status"></td>
+    <td id="vm10_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm10_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm10_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm10_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm11_status"></td>
+    <td id="vm11_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm11_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm11_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm11_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm12_status"></td>
+    <td id="vm12_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm12_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm12_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm12_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm13_status"></td>
+    <td id="vm13_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm13_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm13_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm13_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm14_status"></td>
+    <td id="vm14_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm14_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm14_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm14_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm15_status"></td>
+    <td id="vm15_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm15_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm15_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm15_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm16_status"></td>
+    <td id="vm16_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm16_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm16_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm16_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm17_status"></td>
+    <td id="vm17_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm17_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm17_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm17_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm18_status"></td>
+    <td id="vm18_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm18_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm18_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm18_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm19_status"></td>
+    <td id="vm19_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm19_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm19_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm19_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm20_status"></td>
+    <td id="vm20_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm20_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm20_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm20_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm21_status"></td>
+    <td id="vm21_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm21_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm21_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm21_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm22_status"></td>
+    <td id="vm22_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm22_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm22_percent">&nbsp;</span></td>    
+    <td><span class="value" id="vm22_value">&nbsp;</span></td>
+</tr>
+</tbody></table>
+</body></html>
+

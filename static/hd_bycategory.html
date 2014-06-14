@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="Helpdesk Top Categories" data-allows-resizing="YES" data-allows-scrolling="NO">
+    
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 36px;
+		    color: white;
+		}
+		
+		h2 {
+		    font-size: 12px;
+		    color: rgb(100,100,100);
+		}
+			
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 8px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+        
+
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+        .description {
+            color: rgb(100,100,100);
+            text-transform: none;
+            text-align: right;
+        }
+        .ticket_counter {
+	        text-align:center;
+        	font-size:  72px;    	
+        }
+        
+        .ticket_icon {
+			width:  50px;
+			height:  50px;
+        }
+              
+        .category_name {
+            width: 200px;
+            display:inline-block;  
+        }
+
+        .meter { 
+            width: 300px;
+            height: 12px;  /* Can be anything */
+            position: relative;
+            background: #222222;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 4px;
+            border-radius: 2px;
+            padding: 2px 2px 2px 2px;
+          
+        }
+
+        .label {
+            font-size:  12px;
+            text-align: right;  
+            padding: 1px 2px 0 0;
+        }
+
+        .meter > .ticket {
+            display: block;
+            height: 100%;
+               -webkit-border-top-right-radius: 2px;
+            -webkit-border-bottom-right-radius: 2px;
+                   -moz-border-radius-topright: 2px;
+                -moz-border-radius-bottomright: 2px;
+                       border-top-right-radius: 2px;
+                    border-bottom-right-radius: 2px;
+                -webkit-border-top-left-radius: 20px;
+             -webkit-border-bottom-left-radius: 20px;
+                    -moz-border-radius-topleft: 20px;
+                 -moz-border-radius-bottomleft: 20px;
+                        border-top-left-radius: 20px;
+                     border-bottom-left-radius: 20px;
+            background-color: #00ba00;
+
+            -webkit-box-shadow: 
+              inset 0 2px 9px  rgba(255,255,255,0.3),
+              inset 0 -2px 6px rgba(0,0,0,0.4);
+            -moz-box-shadow: 
+              inset 0 2px 9px  rgba(255,255,255,0.3),
+              inset 0 -2px 6px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+            float: left;
+        }        
+        .meter > .response {
+            display: block;
+            height: 100%;
+            background-color: #006ce6;
+
+            -webkit-box-shadow: 
+              inset 0 2px 9px  rgba(255,255,255,0.3),
+              inset 0 -2px 6px rgba(0,0,0,0.4);
+            -moz-box-shadow: 
+              inset 0 2px 9px  rgba(255,255,255,0.3),
+              inset 0 -2px 6px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        } 
+      
+	</style>
+
+
+    <script type="text/javascript">
+    previous_ticket_count = 0;
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // { "total": 500, "categories": [{"category": "Outlook", "tickets": 20, "responses": 45, ...   ]}
+                // error json format:
+                // { "categories": [{"error": "details"}]}
+
+                category_array = ajaxdata['categories'];
+                if ("error" in category_array[0]) {
+                    $('#errorText').html(category_array[0]["error"]);
+                    $('#errorText').css("display", "static");
+                    $('#category_table').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#category_table').css("display", "static");  
+                    
+                    ticket_count = ajaxdata['total'];
+	                
+                    if (ticket_count > previous_ticket_count) {
+                    	$('#open_tickets').html(ticket_count + '<img src="/static/images/up.png" class="ticket_icon" />');
+	                } else {
+						$('#open_tickets').html(ticket_count + '<img src="/static/images/up.png" class="ticket_icon" />');
+	                }
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<category_array.length; i++) {
+                        $('#cat' + i ).html(category_array[i]["category"]);
+                        $('#cat' + i + '_tickets').html(category_array[i]["tickets"]);
+                        $('#cat' + i + '_responses').html(category_array[i]["responses"]);
+                    }
+                }
+
+            } else if (xmlHTTP.status==404) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "static");
+                $('#category_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/hd_bycategory_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('category_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<table id="category_table">
+<tbody>
+<tr><td colspan="3" class="header">Helpdesk</td></tr>
+<tr><td id="open_tickets" class="ticket_counter tickets_up"></td></tr>
+<tr><td></td><td colspan="2">
+
+<div class="meter">
+    <div class="ticket" style="width: 25%"><div class="label">36</div></div><div class="response" style="width: 50%"><div class="label">121</div></div>
+</div>
+
+
+</td></tr>
+<tr><td id="cat0" class="category_name"></td><td id="cat0_tickets"></td><td id="cat0_responses"></td></tr>
+<tr><td id="cat1" class="category_name"></td><td id="cat1_tickets"></td><td id="cat1_responses"></td></tr>
+<tr><td id="cat2" class="category_name"></td><td id="cat2_tickets"></td><td id="cat2_responses"></td></tr>
+<tr><td id="cat3" class="category_name"></td><td id="cat3_tickets"></td><td id="cat3_responses"></td></tr>
+<tr><td id="cat4" class="category_name"></td><td id="cat4_tickets"></td><td id="cat4_responses"></td></tr>
+<tr><td id="cat5" class="category_name"></td><td id="cat5_tickets"></td><td id="cat5_responses"></td></tr>
+<tr><td id="cat6" class="category_name"></td><td id="cat6_tickets"></td><td id="cat6_responses"></td></tr>
+<tr><td id="cat7" class="category_name"></td><td id="cat7_tickets"></td><td id="cat7_responses"></td></tr>
+<tr><td id="cat8" class="category_name"></td><td id="cat8_tickets"></td><td id="cat8_responses"></td></tr>
+<tr><td id="cat9" class="category_name"></td><td id="cat9_tickets"></td><td id="cat9_responses"></td></tr>
+</tbody></table>
+</body></html>
+

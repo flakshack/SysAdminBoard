@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="VMware ESX Status" data-allows-resizing="YES" data-min-size="6,3" data-max-size="10,20" data-allows-scrolling="NO">
+
+
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 36px;
+		    color: white;
+		}
+		
+		h2 {
+		    font-size: 12px;
+		    color: rgb(100,100,100);
+		}
+			
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 8px 4px 4px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: center;
+            margin: 4px 0px 4px 0px;
+		}
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }        
+        
+        .status-gray {
+            background: url(/static/images/0unknown.png) no-repeat;
+            background-size: 16px;
+            width: 20px;
+        }		
+		.status-green {
+			background: url(/static/images/1normal.png) no-repeat;
+			background-size: 16px;            
+			width: 20px;
+		}
+		.status-yellow {
+			background: url(/static/images/2warning.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.status-red {
+			background: url(/static/images/3alert.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.sparkline {
+			padding: 0 2px 0 2px;						
+		}
+        .host_name {
+            text-align: left; 
+            margin-top: 2px;            
+            width: 100px;
+            display:inline-block;   
+        }
+        .current_value {
+            text-transform: none;
+            text-align: left;
+        }
+
+        .units {
+            color: rgb(100,112,118)
+        }
+
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+
+	</style>
+
+
+    <script type="text/javascript">
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // { "hosts": [{"status": 1, "name": "Server1", "cpu": [3,5,3,4,2,3,1,1], "ram": 132.12} ... ]}
+                // error json format:
+                // { "hosts": [{"error": "details"}]}
+
+                host_array = ajaxdata['hosts'];
+                if ("error" in host_array[0]) {
+                    $('#errorText').html(host_array[0]["error"]);
+                    $('#errorText').css("display", "static");
+                    $('#host_table').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#host_table').css("display", "static");
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<host_array.length; i++) {
+                        $('#host' + i + '_name').html(host_array[i]["name"]);
+
+                        // For the status, we change the class of the TD
+                        if (host_array[i]["status"] == 1) {
+                            $('#host' + i + '_status').removeClass("status-gray status-red status-yellow").addClass("status-green");
+                        } else {
+                            if (host_array[i]["status"] == 2) {
+                                $('#host' + i + '_status').removeClass("status-gray status-red status-green").addClass("status-yellow");
+                            } else {
+                                if (host_array[i]["status"] == 3) {
+                                    $('#host' + i + '_status').removeClass("status-gray status-green status-yellow").addClass("status-red");
+                                } else {
+                                    $('#host' + i + '_status').removeClass("status-red status-green status-yellow").addClass("status-gray");
+                                }
+                            }
+                        }
+
+                        // Update sparkline to reflect latest CPU data
+                        $('#host' + i + '_cpuspark').sparkline(host_array[i]["cpu"], {
+                            type: 'line',
+                            height: '20px',
+                            width: '100px',
+                            lineColor: '#aeb7bc',
+                            lineWidth: 1.5,
+                            fillColor: 'transparent',
+                            minSpotColor: 'transparent',
+                            maxSpotColor: 'transparent',
+                            spotRadius: 2
+                            }
+                        );
+
+
+                        // Update sparkline to reflect latest RAM data
+                        var percent_free = 100 - host_array[i]["ram_percent"];
+                        $('#host' + i + '_ramspark').sparkline([percent_free,host_array[i]["ram_percent"]], {
+                            type: 'pie',
+                            height: '20px',
+                            width: '20px',
+                            sliceColors: ['#647076','#FC6B00']
+                            }
+                        );                        
+
+                        // Update the current numeric value field
+                        $('#host' + i + '_current_cpu').html(host_array[i]["cpu"].pop() + "<span class='units'> mhz</span>");
+
+                        // Update the current numeric value field
+                        $('#host' + i + '_current_ram').html(host_array[i]["ram"] + "<span class='units'> gb</span>");                        
+                    }
+                }
+
+            } else if (xmlHTTP.status==404) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "static");
+                $('#host_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/view_host_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('host_table').style.backgroundColor = 'black';
+            document.getElementById('errorText').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<table id="host_table">
+<tbody>
+<tr><td colspan="6" class="header">VMware ESX Hosts</td></tr>
+<tr>
+    <td id="host0_status"></td>
+    <td id="host0_name" class="host_name">&nbsp;</td>
+    <td><span id="host0_cpuspark" class="sparkline"></span></td>
+    <td id="host0_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host0_ramspark" class="sparkline"></span></td>
+    <td id="host0_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host1_status"></td>
+    <td id="host1_name" class="host_name">&nbsp;</td>
+    <td><span id="host1_cpuspark" class="sparkline"></span></td>
+    <td id="host1_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host1_ramspark" class="sparkline"></span></td>
+    <td id="host1_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host2_status"></td>
+    <td id="host2_name" class="host_name">&nbsp;</td>
+    <td><span id="host2_cpuspark" class="sparkline"></span></td>
+    <td id="host2_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host2_ramspark" class="sparkline"></span></td>
+    <td id="host2_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host3_status"></td>
+    <td id="host3_name" class="host_name">&nbsp;</td>
+    <td><span id="host3_cpuspark" class="sparkline"></span></td>
+    <td id="host3_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host3_ramspark" class="sparkline"></span></td>
+    <td id="host3_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host4_status"></td>
+    <td id="host4_name" class="host_name">&nbsp;</td>
+    <td><span id="host4_cpuspark" class="sparkline"></span></td>
+    <td id="host4_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host4_ramspark" class="sparkline"></span></td>
+    <td id="host4_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host5_status"></td>
+    <td id="host5_name" class="host_name">&nbsp;</td>
+    <td><span id="host5_cpuspark" class="sparkline"></span></td>
+    <td id="host5_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host5_ramspark" class="sparkline"></span></td>
+    <td id="host5_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host6_status"></td>
+    <td id="host6_name" class="host_name">&nbsp;</td>
+    <td><span id="host6_cpuspark" class="sparkline"></span></td>
+    <td id="host6_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host6_ramspark" class="sparkline"></span></td>
+    <td id="host6_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host7_status"></td>
+    <td id="host7_name" class="host_name">&nbsp;</td>
+    <td><span id="host7_cpuspark" class="sparkline"></span></td>
+    <td id="host7_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host7_ramspark" class="sparkline"></span></td>
+    <td id="host7_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host8_status"></td>
+    <td id="host8_name" class="host_name">&nbsp;</td>
+    <td><span id="host8_cpuspark" class="sparkline"></span></td>
+    <td id="host8_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host8_ramspark" class="sparkline"></span></td>
+    <td id="host8_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+<tr>
+    <td id="host9_status"></td>
+    <td id="host9_name" class="host_name">&nbsp;</td>
+    <td><span id="host9_cpuspark" class="sparkline"></span></td>
+    <td id="host9_current_cpu" class="current_value">&nbsp;</td>
+    <td><span id="host9_ramspark" class="sparkline"></span></td>
+    <td id="host9_current_ram" class="current_value">&nbsp;</td>    
+</tr>
+
+
+
+</tbody></table>
+</body></html>
+

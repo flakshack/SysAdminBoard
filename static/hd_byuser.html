@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="Helpdesk Top 10" data-allows-resizing="YES" data-allows-scrolling="NO">
+    
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 36px;
+		    color: white;
+		}
+		
+		h2 {
+		    font-size: 12px;
+		    color: rgb(100,100,100);
+		}
+			
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 8px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+        
+        .user_icon {
+            background: url(/static/images/user_icon.png) no-repeat;
+            background-size: 20px;
+            width: 20px;
+        }		
+        .user_name {
+            text-align: left; 
+            margin-top: 2px;            
+            width: 150px;
+            display:inline-block;   
+        }
+
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+        .description {
+            color: rgb(100,100,100);
+            text-transform: none;
+            text-align: right;
+        }
+               
+
+
+	</style>
+
+
+    <script type="text/javascript">
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // { "users": [{"count": 37, "name": "Kelly, Anne", ...   ]}
+                // error json format:
+                // { "users": [{"error": "details"}]}
+
+                user_array = ajaxdata['users'];
+                if ("error" in user_array[0]) {
+                    $('#errorText').html(user_array[0]["error"]);
+                    $('#errorText').css("display", "static");
+                    $('#user_table').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#user_table').css("display", "static");                    
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<user_array.length; i++) {
+                        $('#name' + i ).html(user_array[i]["name"]);
+                        $('#value' + i ).html(user_array[i]["count"]);
+                    }
+                }
+
+            } else if (xmlHTTP.status==404) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "static");
+                $('#user_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/hd_byuser_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('user_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<table id="user_table">
+<tbody>
+<tr><td colspan="3" class="header">Helpdesk TOP 10</td></tr>
+<tr><td colspan="3" class="description">Tickets in last 30 days &nbsp;</td></tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name0" class="user_name">&nbsp;</td>
+    <td id="value0"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name1" class="user_name">&nbsp;</td>
+    <td id="value1"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name2" class="user_name">&nbsp;</td>
+    <td id="value2"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name3" class="user_name">&nbsp;</td>
+    <td id="value3"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name4" class="user_name">&nbsp;</td>
+    <td id="value4"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name5" class="user_name">&nbsp;</td>
+    <td id="value5"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name6" class="user_name">&nbsp;</td>
+    <td id="value6"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name7" class="user_name">&nbsp;</td>
+    <td id="value7"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name8" class="user_name">&nbsp;</td>
+    <td id="value8"></td>
+</tr>
+<tr>
+    <td class="user_icon"></td>
+    <td id="name9" class="user_name">&nbsp;</td>
+    <td id="value9"></td>
+</tr>
+</tbody></table>
+</body></html>
+

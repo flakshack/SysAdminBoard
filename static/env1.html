@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="Cache-control" content="no-cache">
+        <meta application-name="SNMP Environmental" data-allows-resizing="YES">
+
+<head>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/static/js/jquery.easypiechart.min.js"></script>
+    <script src="/static/js/rainbowvis.js"></script>
+    
+
+
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesC";
+		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 14px;		    
+            padding-top: 5px;
+		}
+		
+			
+		table {
+		    border-collapse: collapse;
+		    table-layout:fixed;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
+		    border-spacing: 4px; 
+            margin-top: 4px;           
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		}
+		td {
+		    padding: 2px 10px 2px 10px;
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: clip;
+		    text-align: center;
+            
+		}
+
+        #env_table {
+            margin-top: 20px;
+        }
+		
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .detail_table td {
+            border-bottom: 1px solid #647076;
+            font-size: 12px;
+        }
+        .detail_header {
+            color: #647076;
+        }
+
+        /* CSS For Pie Chart */
+        .chart_large {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+        }
+        .chart_large canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }        
+        .degree_large {
+            display: inline-block;
+            line-height: 105px;
+            z-index: 2;
+            font-size: 26px;
+        }
+        .degree_large:after {
+            content: '\00B0 F';
+            margin-left: 0.1em;
+            font-size: 26px; 
+        }
+
+		
+	</style>
+
+
+    <script type="text/javascript">
+
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             // Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                envdata = JSON.parse(xmlHTTP.responseText);
+                if ("error" in envdata) {       // If there was an error with the data, show it (and hide the charts)
+                    $('#errorText').html(envdata['error']);
+                    $('#errorText').css("display", "inline");
+                    $('#env_table').css("display", "none");
+                } else {                        
+                    $('#errorText').css("display", "none");
+                    $('#env_table').css("display", "static");
+
+                    $('#clt_temp').html(envdata['clt_temp']);            
+                    $('#clt_humidity').html(envdata['clt_humidity']);
+                    $('#clt_load').html(envdata['clt_load']);
+                    $('#clt_runtime').html(envdata['clt_runtime']);
+                    $('#rh_temp').html(envdata['rh_temp']);
+                    $('#rh_humidity').html(envdata['rh_humidity']);
+                    var rh_load = ((5 * envdata['rh_load'])/100).toFixed(1);        // calculate kva from percent load (5 kva unit)
+                    $('#rh_load').html(rh_load);
+                    $('#rh_runtime').html(envdata['rh_runtime']);
+                    $('#tri_temp').html(envdata['tri_temp']);
+                    $('#tri_humidity').html(envdata['tri_humidity']);
+                    var tri_load = ((5 * envdata['tri_load'])/100).toFixed(1);      // calculate kva from percent load (5 kva unit)
+                    $('#tri_load').html(tri_load);                                
+                    $('#tri_runtime').html(envdata['tri_runtime']);
+
+                    // Update the pie charts
+                    $('#cold_aisle_chart').data('easyPieChart').update(envdata['cold_aisle']);
+                    $('#hot_aisle_chart').data('easyPieChart').update(envdata['hot_aisle']);
+                }
+            
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#env_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/env1_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('env_table').style.backgroundColor = 'black';            
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+
+        // Create the pie charts
+        $('#cold_aisle_chart').easyPieChart({
+            barColor: function(percent) {
+                // Return a color value based on percent value (white, blue, red)
+                var rainbow = new Rainbow();
+                rainbow.setSpectrum('#ffffff','6196DF','006ce6','ff3000');
+                var hexColor = '#' + rainbow.colourAt(percent);
+                return hexColor;
+            },
+            trackColor: '#222222',
+            scaleColor: false,
+            size: 100,
+            lineWidth: 20,       
+            lineCap: 'butt',
+            easing: 'easeOutBounce',
+            onStep: function(from, to, percent) {
+                $('#cold_aisle_value').text(Math.round(percent));
+            }
+        });
+        $('#hot_aisle_chart').easyPieChart({
+            barColor: function(percent) {
+                // Return a color value based on percent value (white, blue, red)
+                var rainbow = new Rainbow();
+                rainbow.setSpectrum('#ffffff','6196DF','006ce6','ff3000');
+                var hexColor = '#' + rainbow.colourAt(percent);
+                return hexColor;
+            },
+            trackColor: '#222222',
+            scaleColor: false,
+            size: 100,
+            lineWidth: 20,       
+            lineCap: 'butt',
+            easing: 'easeOutBounce',
+            onStep: function(from, to, percent) {
+                $('#hot_aisle_value').text(Math.round(percent));
+            }
+        });    
+
+    }
+
+    </script>
+</head>
+	
+<body onload="init()"><div id="errorText"></div>
+<table id="env_table">
+<tr>
+    <td><span class="chart_large" id="cold_aisle_chart" data-percent="0"> <span class="degree_large" id="cold_aisle_value"></span></span><h1>Cold Aisle</h1></td>
+    <td><span class="chart_large" id="hot_aisle_chart" data-percent="0"> <span class="degree_large" id="hot_aisle_value"></span></span><h1>Hot Aisle</h1></td>
+</tr>
+<tr>
+    <td colspan="2">
+        <table class="detail_table">
+            <tr class="detail_header">
+                <td></td>
+                <td><img src="/static/images/temp.png" alt="Temp"/></td>
+                <td><img src="/static/images/humidity.png" alt="Humidity"/></td>
+                <td><img src="/static/images/load.png" alt="UPS Load"/></td>
+                <td><img src="/static/images/runtime.png" alt="UPS Runtime"/></td>
+            </tr>
+            <tr>
+                <td>CLT</td>
+                <td><span id="clt_temp">--</span>&deg;F</td>
+                <td><span id="clt_humidity">--</span>%</td>
+                <td><span id="clt_load">--</span>kva</td>
+                <td><span id="clt_runtime">--</span>min</td>
+            </tr>
+            <tr>
+                <td>RH</td>
+                <td><span id="rh_temp">--</span>&deg;F</td>
+                <td><span id="rh_humidity">--</span>%</td>
+                <td><span id="rh_load">--</span>kva</td>
+                <td><span id="rh_runtime">--</span>min</td>
+            </tr>
+            <tr>
+                <td>TRI</td>
+                <td><span id="tri_temp">--</span>&deg;F</td>
+                <td><span id="tri_humidity">--</span>%</td>
+                <td><span id="tri_load">--</span>kva</td>
+                <td><span id="tri_runtime">--</span>min</td>
+            </tr>
+        </table>
+    </td>
+</tr>
+</table>
+
+
+
+</body></html>
