@@ -69,6 +69,7 @@ easy_install pysnmp
 ```
 
 Setup Service
+
 There is a simple init.d script in the source init.d directory.  Copy the sysadminboard  file to /etc/init.d/sysadminboard on server.  Copy all of my files into /opt/sysadminboard, create a user and group called sbpython, change ownership of all files to sbpython.  (The Webserver process will run as sbpython).
 ```
 chmod +x /etc/init.d/sysadminboard
