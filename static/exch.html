@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="Exchange Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
+
+
+    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+    <script type="text/javascript" src="/static/js/flipcounter.js" ></script>
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesD";
+		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+			
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 8px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+        
+
+        .data_name {
+            padding-top: 20px;
+            color: rgb(100,112,118);  
+            text-transform: none;      
+        }
+        .server_name {            
+            font-size: 14px;
+        } 
+        .value {
+            font-size: 12px;
+        }  
+        .unit {
+            font-size: 12px;
+            color: rgb(100,112,118); 
+            text-transform: none;       
+        }             
+        .counter_name {
+            text-transform: none;
+            font-size: 12px;            
+        }
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 14px;
+            padding-bottom: 4px;
+        } 
+
+        /* To center a block-level element of unknown width */
+         .centered-block-outer { 
+           overflow: hidden;
+           position: relative;/* ie7 needs position:relative here*/
+         }
+        .centered-block-middle {
+          float: left;
+          position:relative;
+          left:50%;
+        }
+        .centered-block-inner {
+          position:relative;
+          left:-50%;
+        }     
+        .counter {
+            padding: 5px 0 15px 0;
+        }
+
+    
+        .flip-counter ul.cd{float:left;list-style-type:none;margin:0;padding:0}
+        .flip-counter li{background:url(/static/images/digits.png) 0 0 no-repeat}
+        .flip-counter li.t{background-position:0 0;width:29px;height:20px}
+        .flip-counter li.b{background-position:0 0;width:29px;height:40px}
+        .flip-counter li.s{background-position:-29px -600px;width:6px;height:56px}               
+
+
+	</style>
+
+
+    <script type="text/javascript">
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                var ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:  
+                // {"edge2_receive_datapoints": [0, 2, 1, 4, 3, 2, 3, 2, 1, 1, 5, 1], 
+                // "outlook1_rpc_total": [24951078, 24958409, 24958934], 
+                // "edge2_send_total": 58383, "outlook1_rpc_active_users": [29, 25, 25, 25, 25, 33, 33, 20, 20, 23, 23, 27], 
+                // "outlook1_rpc_avg_latency": [5, 5, 4, 4, 3, 5, 6, 6, 6, 6, 6, 5], 
+                // "outlook2_rpc_total": [30886421, 30887915, 30893894, 30894481, 30895206], "edge1_send_total": 104737, 
+                // "edge2_send_datapoints": [0, 2, 1, 4, 3, 2, 3, 2, 1, 1, 5, 1], 
+                // "edge1_send_datapoints": [0, 5, 6, 5, 8, 5, 1, 5, 4, 1, 7, 4], 
+                // "outlook2_rpc_avg_latency": [7, 7, 6, 5, 6, 6, 6, 7, 6, 6, 6, 6], 
+                // "edge1_receive_datapoints": [0, 4, 6, 6, 4, 5, 2, 3, 4, 1, 8, 3], 
+                // "edge2_receive_total": 58381, "outlook2_rpc_active_users": [15, 15, 15, 12, 12, 15, 15, 20, 20, 13, 13, 18], 
+                // "edge1_receive_total": 93988}               
+                // error json format:
+                // {"error": "details"}
+                
+                if ("error" in ajaxdata) {
+                    $('#errorText').html(ajaxdata["error"]);
+                    $('#errorText').css("display", "static");
+                    $('#smtp_table').css("display", "none");
+                } else {
+
+
+                    // No error, so hide the error if it was displayed previously.
+                    $('#errorText').css("display", "none");
+                    $('#smtp_table').css("display", "static");                    
+                      
+                    // ===============SMTP Data============
+                    var edge1_send_total = ajaxdata['edge1_send_total'];
+                    var edge2_send_total = ajaxdata['edge2_send_total'];
+                    var edge1_receive_total = ajaxdata['edge1_receive_total'];
+                    var edge2_receive_total = ajaxdata['edge2_receive_total'];
+
+                    // Since servers send and receive all messages, divide total by 2
+                    var total_messages = edge1_send_total + edge2_send_total + edge1_receive_total + edge2_receive_total;
+                    total_messages = Math.round(total_messages/2);
+                  
+                    // If this is the first time through, 
+                    var old_total_messages = flip_counter.getValue();
+                    if (old_total_messages == 0) {                        
+                        flip_counter.incrementTo(total_messages, 10); 
+                    } else if (old_total_messages > total_messages) {       // Counter doesn't do a good job of incrementing backwards.
+                        flip_counter.setValue(0);
+                        flip_counter.incrementTo(total_messages, 10);
+                    } else {
+                        flip_counter.incrementTo(total_messages, 59, 2000);        //Increment to new count over next 59 seconds
+                    }
+
+                    // ===============CAS Data============                    
+
+                    // Update sparklines
+                    $('#outlook1_active_users_spark').sparkline(ajaxdata["outlook1_rpc_active_users"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );
+                    $('#outlook1_rpc_avg_latency_spark').sparkline(ajaxdata["outlook1_rpc_avg_latency"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );
+                    $('#outlook1_rpc_total_spark').sparkline(ajaxdata["outlook1_rpc_total"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );
+                    $('#outlook2_active_users_spark').sparkline(ajaxdata["outlook2_rpc_active_users"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );
+                    $('#outlook2_rpc_avg_latency_spark').sparkline(ajaxdata["outlook2_rpc_avg_latency"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );
+                    $('#outlook2_rpc_total_spark').sparkline(ajaxdata["outlook2_rpc_total"], {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );                    
+
+                    // Update the current numeric value field
+                    var outlook1_active_users = ajaxdata["outlook1_rpc_active_users"].pop();
+                    $('#outlook1_active_users_value').html(outlook1_active_users);                    
+                    var outlook1_rpc_avg_latency = ajaxdata["outlook1_rpc_avg_latency"].pop();
+                    $('#outlook1_rpc_avg_latency_value').html(outlook1_rpc_avg_latency);                         
+                    var outlook1_rpc_total = ajaxdata["outlook1_rpc_total"].pop();
+                    $('#outlook1_rpc_total_value').html(outlook1_rpc_total);                         
+                    var outlook2_active_users = ajaxdata["outlook2_rpc_active_users"].pop();
+                    $('#outlook2_active_users_value').html(outlook2_active_users);                    
+                    var outlook2_rpc_avg_latency = ajaxdata["outlook2_rpc_avg_latency"].pop();
+                    $('#outlook2_rpc_avg_latency_value').html(outlook2_rpc_avg_latency);                         
+                    var outlook2_rpc_total = ajaxdata["outlook2_rpc_total"].pop();
+                    $('#outlook2_rpc_total_value').html(outlook2_rpc_total);                     
+                                                           
+                }
+
+            } else if (xmlHTTP.status==404) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "static");
+                $('#smtp_table').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser or it will not work due to javascript security
+        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/exch_ajax', true);
+        xmlHTTP.send(null);
+    }
+
+   
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('exch_table').style.backgroundColor = 'black';
+        }
+
+        // Initialize the flipcounter
+        flip_counter = new flipCounter('flip-counter', {value:0, auto:false});
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+                        
+    }    
+
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText">Error retrieving data</div>
+<table id="exch_table">
+<tbody>
+<tr><td colspan="4" class="header">Internet SMTP</td></tr>
+<tr>
+    <td colspan="4" class="counter">
+        <div class="centered-block-outer">
+        <div class="centered-block-middle">
+        <div class="centered-block-inner">
+
+   <!-- div that you'd like to center goes here -->
+   <div id="flip-counter" class="flip-counter"></div>   
+        </div>
+        </div>
+        </div>
+    </td>
+</tr>
+<tr><td colspan="3" class="header">Exchange Client Access</td></tr>
+<tr>
+    <td class="counter_name">1</td>
+    <td class="counter_name">Active Users</td>
+    <td><span id="outlook1_active_users_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook1_active_users_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td class="counter_name">2</td>
+    <td class="counter_name">Active Users</td>
+    <td><span id="outlook2_active_users_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook2_active_users_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td class="counter_name">1</td>    
+    <td class="counter_name">RPC Latency</td>
+    <td><span id="outlook1_rpc_avg_latency_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook1_rpc_avg_latency_value">&nbsp;</span><span class="unit"> ms</span></td>
+</tr>
+<tr>
+    <td class="counter_name">2</td>    
+    <td class="counter_name">RPC Latency</td>
+    <td><span id="outlook2_rpc_avg_latency_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook2_rpc_avg_latency_value">&nbsp;</span><span class="unit"> ms</span></td>
+</tr>
+<tr>
+    <td class="counter_name">1</td>    
+    <td class="counter_name">RPC Operations</td>
+    <td><span id="outlook1_rpc_total_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook1_rpc_total_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td class="counter_name">2</td>    
+    <td class="counter_name">RPC Operations</td>
+    <td><span id="outlook2_rpc_total_spark" class="sparkline"></span></td>   
+    <td><span class="value" id="outlook2_rpc_total_value">&nbsp;</span></td>
+</tr>
+</tbody></table>
+</body></html>
+

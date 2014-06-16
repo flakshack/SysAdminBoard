@@ -33,6 +33,11 @@ This code talks to a couple different APC devices to pull in temperature, humidi
 
 This code talks to an EMC VNX Reporting and Monitoring web server to pull down performance data.  There is probably a better way to do this, but I was in a hurry.
 
+###Exchange Monitoring
+![Exchange Monitoring Gadget](readme-images/exch.png)
+
+This code monitors a Microsoft Exchange server to display SMTP message totals for the day along with RPC and latency information (per CAS server).  Note that this code requires my [pyPerfmon](https://github.com/flakshack/pyPerfmon) app running on each Exchange server to be monitored.
+
 ## Code Layout
 Individual python files are designed to be run independently for testing.  You can run any of the python files directly and it will output data in JSON format.  (Personally, I recommend loading it up in the [PyCharm](http://www.jetbrains.com/pycharm/) debugger).  
 
@@ -118,3 +123,4 @@ Here's a quick list of improvements I'd like to make to the system when I have t
 * [PySNMP](http://pysnmp.sourceforge.net)
 * [PySphere](https://code.google.com/p/pysphere/)
 * [CherryPy](http://www.cherrypy.org/)
+* [Flipcounter.js](http://cnanney.com/journal/code/apple-style-counter-revisited/)

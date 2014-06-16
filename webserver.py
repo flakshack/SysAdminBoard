@@ -8,6 +8,7 @@ import cherrypy
 from cherrypy.lib.static import serve_file
 from cherrypy.process.plugins import Daemonizer
 import os
+import msexchange
 import snmp_interface_1
 import snmp_interface_2
 import snmp_environmental_1
@@ -39,11 +40,11 @@ class MyWebServer(object):
         html = """<html><head><title>SysAdminBoard Gadget Server</title></head><body>
             This web server provides data to the StatusBoard iPad app.<br/>
             For testing, try visiting these pages:<br/>
-            <a href="http://sysadminboard.yourcompany.com/static/vmhost.html?desktop">http://sysadminboard.yourcompany.com/static/vmhost.html?desktop</a><br/>
-            <a href="http://sysadminboard.yourcompany.com/static/vm.html?desktop">http://sysadminboard.yourcompany.com/static/vm.html?desktop</a><br/>
-            <a href="http://sysadminboard.yourcompany.com/static/vnx.html?desktop">http://sysadminboard.yourcompany.com/static/vnx.html?desktop</a><br/>
-             <a href="http://sysadminboard.yourcompany.com/static/env1.html?desktop">http://sysadminboard.yourcompany.com/static/env1.html?desktop</a><br/>
-             <a href="http://sysadminboard.yourcompany.com/static/exch.html?desktop">http://sysadminboard.yourcompany.com/static/exch.html?desktop</a><br/>
+            <a href="http://sysadminboard.yourcompany.local/static/vmhost.html?desktop">http://sysadminboard.yourcompany.local/static/vmhost.html?desktop</a><br/>
+            <a href="http://sysadminboard.yourcompany.local/static/vm.html?desktop">http://sysadminboard.yourcompany.local/static/vm.html?desktop</a><br/>
+            <a href="http://sysadminboard.yourcompany.local/static/vnx.html?desktop">http://sysadminboard.yourcompany.local/static/vnx.html?desktop</a><br/>
+             <a href="http://sysadminboard.yourcompany.local/static/env1.html?desktop">http://sysadminboard.yourcompany.local/static/env1.html?desktop</a><br/>
+             <a href="http://sysadminboard.yourcompany.local/static/exch.html?desktop">http://sysadminboard.yourcompany.local/static/exch.html?desktop</a><br/>
             </body></html>
         """
         return html
@@ -84,6 +85,15 @@ class MyWebServer(object):
     def host_ajax(self):
         cherrypy.response.headers['Content-Type'] = 'application/json'
         return vmware_host_data.json
+
+    @cherrypy.expose
+    def exch(self):
+        return serve_file(os.path.join(STATIC_DIR, 'exch.html'))
+
+    @cherrypy.expose
+    def exch_ajax(self):
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        return exch_data.json
 
     @cherrypy.expose
     def view_host(self):
@@ -136,6 +146,10 @@ class MyWebServer(object):
 #=======================Callback Functions==========================
 # Each of these functions creates a separate thread that is run every "frequency" seconds by cherrypy to
 # update the json data on the variable passed to it.
+
+def exch_callback():
+    global exch_data
+    msexchange.generate_json(exch_data)
 
 
 def snmp_interface_1_callback():
@@ -195,6 +209,11 @@ def hd_bycategory_callback():
 # In this section, we create a global variable to hold data for each module and then register the callback function
 # with the CherryPy engine so that each module will be launched in a separate thread.
 
+#========= Exchange Perfmon Counters =========
+exch_data = msexchange.MonitorJSON()
+frequency = msexchange.SAMPLE_INTERVAL
+cherrypy.process.plugins.Monitor(cherrypy.engine, exch_callback, frequency=frequency).subscribe()
+
 #========= SNMP Interface 1 =========
 snmp_interface_1_data = snmp_interface_1.MonitorJSON()
 frequency = snmp_interface_1.SAMPLE_INTERVAL
@@ -251,6 +270,7 @@ cherrypy.process.plugins.Monitor(cherrypy.engine, hd_bycategory_callback, freque
 
 
 # Callback functions won't run until after first FREQUENCY, so run them once now
+exch_callback()
 snmp_environmental_1_callback()
 snmp_interface_1_callback()
 snmp_interface_2_callback()
