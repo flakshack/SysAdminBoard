@@ -5,6 +5,12 @@ SysAdminBoard is a collection of DIY panels and data generators for the [Panic S
 
 This project is not intended to be a ready-to-deploy solution.  However, if you are comfortable with Python, you should be able to get this working without much effort.
 
+Here are some location shots of our installation:
+
+![Network Services Room](readme-images/location1.jpg)
+
+![Helpdesk Room](readme-images/location2.jpg)
+
 ##Features
 ###VMware vSphere ESX Host Monitoring
 ![ESX Host Gadget](readme-images/host.png)
