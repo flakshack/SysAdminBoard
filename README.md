@@ -59,7 +59,7 @@ Here are some directions for a base CentOS Linux server install.
 
 Install setuptools and pip
 ```
-curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | python -
+curl https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py | python -
 ```
 
 Install required Python modules for the statusboard code.
