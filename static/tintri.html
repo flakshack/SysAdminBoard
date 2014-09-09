@@ -1,0 +1,359 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="Cache-control" content="no-cache">
+        <meta application-name="Tintri Monitoring" data-allows-resizing="YES">
+
+<head>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+    <script src="/static/js/jquery.easypiechart.min.js"></script>
+    <script src="/static/js/rainbowvis.js"></script>    
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesC";
+		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 14px;		    
+            padding-top: 5px;
+		}
+		
+			
+		table {
+		    border-collapse: collapse;
+		    table-layout:fixed;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
+		    border-spacing: 4px; 
+            margin-top: 4px;           
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		}
+		td {
+		    padding: 1px 10px 1px 10px;
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: clip;
+		    text-align: center;
+            
+		}
+
+	
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+
+        table .detail_table {
+            margin-top: 12px;
+        }
+
+        .detail_table td { 
+            text-align: left;           
+            font-size: 14px;            
+            padding: 1px;
+        }
+
+
+        .sparkline span {
+            padding: 0 2px 0 2px;   
+            text-align: center;
+        }
+
+        .unit {                        
+            text-transform: none; 
+            color: rgb(100,112,118);
+        } 
+
+        .stat_name {
+            width: 55px;
+        }
+        .stat_value {
+            width: 55px ;
+        }
+
+        /* CSS For Pie Chart */
+        .chart_large {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+        }
+        .chart_large canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }           
+        #iops_chart_value {
+            display: inline-block;
+            line-height: 105px;
+            z-index: 2;
+            font-size: 16px;
+        }
+        #iops_chart_value:after {
+            content: 'iops';
+            margin-left: 0.1em;
+            font-size: 16px; 
+        }  
+        #space_used_chart_value {
+            display: inline-block;
+            line-height: 105px;
+            z-index: 2;
+            font-size: 16px;
+        }
+        #space_used_chart_value:after {
+            content: 'GB';
+            margin-left: 0.1em;
+            font-size: 16px; 
+        }  
+		
+	</style>
+
+
+    <script type="text/javascript">
+    var iops_latest = 0;
+    var space_used_latest = 0;
+
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             // Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                stats = JSON.parse(xmlHTTP.responseText);
+                stats = stats.stats;
+                                
+                if ("error" in stats) {       // If there was an error with the data, show it (and hide the charts)
+                    $('#errorText').html(stats['error']);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
+                } else {                        
+                    $('#errorText').css("display", "none");
+                    $('#main_output').css("display", "block");
+
+                    iops = stats.iops;
+                    throughput = stats['throughput'];
+                    latency = stats['latency'];
+                    flash_hit = stats['flash_hit'];
+                    space_used = stats['space_used'];
+
+                    var TINTRI_MAX_IOPS = 25000;     // Set a value that will represent 100% of the PIE chart
+                    var TINTRI_MAX_LATENCY = 10;     // Set a value that will represent 100% of the PIE chart
+                    var TINTRI_MAX_SPACE = 12750;    // Set a value that will represent 100% of the PIE chart
+                    
+                    iops_latest =  iops[iops.length - 1];                    
+                    var throughput_latest = throughput[throughput.length - 1];
+                    var latency_latest = latency[latency.length - 1];
+                    var flash_hit_latest = flash_hit[flash_hit.length - 1];
+                    space_used_latest =  Math.round(space_used[space_used.length - 1]);
+
+                    // Update the pie charts  
+                    var iops_percent = Math.round((iops_latest / TINTRI_MAX_IOPS) * 100);                    
+                    var space_used_percent = Math.round((space_used_latest / TINTRI_MAX_SPACE) * 100);                    
+                    $('#iops_chart').data('easyPieChart').update(iops_percent);
+                    $('#iops_chart_value').text = iops_latest;
+                    $('#space_used_chart').data('easyPieChart').update(space_used_percent);
+                    $('#space_used_chart_value').text = space_used_latest;
+
+                    // Update the sparklines
+                    $('#iops_spark').sparkline(iops, {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );              
+                    $('#throughput_spark').sparkline(throughput, {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );  
+                    $('#latency_spark').sparkline(latency, {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );  
+                    $('#flash_hit_spark').sparkline(flash_hit, {
+                        type: 'line',
+                        height: '20px',
+                        width: '100px',
+                        lineColor: '#aeb7bc',
+                        lineWidth: 1.5,
+                        fillColor: 'transparent',
+                        minSpotColor: 'transparent',
+                        maxSpotColor: 'transparent',
+                        spotRadius: 2
+                        }
+                    );  
+                    
+                    // Numeric Values
+                    $('#iops_value').html(iops_latest);
+                    $('#throughput_value').html(throughput_latest);
+                    $('#latency_value').html(latency_latest);
+                    $('#flash_hit_value').html(flash_hit_latest);
+
+                }
+            
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/tintri/ajax', true);
+        xmlHTTP.send(null);
+    }
+
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('main_table').style.backgroundColor = 'black';            
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+
+        // Create the pie charts
+        $('#iops_chart').easyPieChart({
+            barColor: function(percent) {
+                // Return a color value based on percent value (white, blue, red)
+                var rainbow = new Rainbow();
+                rainbow.setSpectrum('6196DF','006ce6','ff3000');
+                var hexColor = '#' + rainbow.colourAt(percent);
+                return hexColor;
+            },
+            trackColor: '#333333',
+            scaleColor: false,
+            size: 100,
+            lineWidth: 20,       
+            lineCap: 'butt',
+            easing: 'easeOutBounce',
+            onStep: function(from, to, percent) {
+                $('#iops_chart_value').text(iops_latest);
+            }              
+        });
+        $('#space_used_chart').easyPieChart({
+            barColor: function(percent) {
+                // Return a color value based on percent value (white, blue, red)
+                var rainbow = new Rainbow();
+                rainbow.setSpectrum('6196DF','006ce6','ff3000');
+                var hexColor = '#' + rainbow.colourAt(percent);
+                return hexColor;
+            },
+            trackColor: '#333333',
+            scaleColor: false,
+            size: 100,
+            lineWidth: 20,       
+            lineCap: 'butt',
+            easing: 'easeOutBounce',
+            onStep: function(from, to, percent) {
+                $('#space_used_chart_value').text(space_used_latest);
+            }            
+        });  
+
+
+
+    }
+
+    </script>
+</head>
+	
+<body onload="init()"><div id="errorText"></div>
+<div id="main_output"><table id="main_table">
+<tr>
+    <tr><td colspan="2" class="header">TINTRI</td></tr>
+    <tr>
+        <td><div class="chart_large" id="iops_chart" data-percent="0"> <div id="iops_chart_value"></div></div></td>
+        <td><div class="chart_large" id="space_used_chart" data-percent="0"> <div id="space_used_chart_value"></div></div></td>
+    </tr>    
+    <td colspan="2">
+        <table class="detail_table">
+            <tr>
+                <td class="stat_name">IOPS</td>
+                <td><span id="iops_spark" class="sparkline"></span></td>                
+                <td class="stat_value"><span class="value" id="iops_value">&nbsp;</span><span class="unit"> IO/s</span></td>
+            </tr>
+            <tr>
+                <td class="stat_name">Throughput</td>
+                <td><span id="throughput_spark" class="sparkline"></span></td>                
+                <td class="stat_value"><span class="value" id="throughput_value">&nbsp;</span><span class="unit"> MB/s</span></td>
+            </tr>
+            <tr>
+                <td class="stat_name">Latency</td>
+                <td><span id="latency_spark" class="sparkline"></span></td>                
+                <td class="stat_value"><span class="value" id="latency_value">&nbsp;</span><span class="unit"> ms</span></td>
+            </tr>
+            <tr>
+                <td class="stat_name">Flash Hit</td>
+                <td><span id="flash_hit_spark" class="sparkline"></span></td>                
+                <td class="stat_value"><span class="value" id="flash_hit_value">&nbsp;</span><span class="unit">%</span></td>
+            </tr>            
+        </table>
+    </td>
+</tr>
+</table></div>
+
+
+
+</body></html>

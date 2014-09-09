@@ -139,11 +139,11 @@
                 host_array = ajaxdata['hosts'];
                 if ("error" in host_array[0]) {
                     $('#errorText').html(host_array[0]["error"]);
-                    $('#errorText').css("display", "static");
-                    $('#host_table').css("display", "none");
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
                 } else {
                     $('#errorText').css("display", "none");
-                    $('#host_table').css("display", "static");
+                    $('#main_output').css("display", "block");
                     // Loop through the results and update the HTML with the new values
                     for (var i=0; i<host_array.length; i++) {
                         $('#host' + i + '_name').html(host_array[i]["name"]);
@@ -196,14 +196,15 @@
                     }
                 }
 
-            } else if (xmlHTTP.status==404) {
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {
                 $('#errorText').html('Unable to update data');
-                $('#errorText').css("display", "static");
-                $('#host_table').css("display", "none");
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
             }
         }
-        // This GET URL must match the domain in the web browser or it will not work due to javascript security
-        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/view_host_ajax', true);
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/vmware_host/ajax', true);
         xmlHTTP.send(null);
     }
 
@@ -225,7 +226,7 @@
 
 <body onload="init()">
 <div id="errorText"></div>
-<table id="host_table">
+<div id="main_output"><table id="host_table">
 <tbody>
 <tr><td colspan="6" class="header">VMware ESX Hosts</td></tr>
 <tr>
@@ -311,6 +312,6 @@
 
 
 
-</tbody></table>
+</tbody></table></div>
 </body></html>
 

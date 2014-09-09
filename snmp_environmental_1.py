@@ -9,12 +9,12 @@ Output data will look like this:
 """
 from __future__ import division    # So division of integers will result in float
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 import time
 import json
-
+from credentials import SNMP_COMMUNITY
 
 
 
@@ -24,7 +24,6 @@ import json
 
 #=================================SETTINGS======================================
 SAMPLE_INTERVAL = 60
-SNMP_COMMUNITY = "public"
 #===============================================================================
 
 class MonitorJSON:
@@ -131,7 +130,7 @@ def generate_json(snmp_monitor):
 
         # ===============TRI APC SMARTUPS  (Must be SNMPv1)
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
-            cmdgen.CommunityData(SNMP_COMMUNITY, mpModel=0),       # mpModel=0 for SNMPv1
+            cmdgen.CommunityData("n8bez5b9rdeabik", mpModel=0),       # mpModel=0 for SNMPv1
             cmdgen.UdpTransportTarget(("10.10.1.13", 161)),
             "1.3.6.1.4.1.318.1.1.10.1.3.3.1.4.1",               # Temperature
             "1.3.6.1.4.1.318.1.1.10.1.3.3.1.6.1",               # Humidity

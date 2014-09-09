@@ -146,15 +146,14 @@
                 // {"error": "details"}
                 
                 if ("error" in ajaxdata) {
-                    $('#errorText').html(ajaxdata["error"]);
-                    $('#errorText').css("display", "static");
-                    $('#smtp_table').css("display", "none");
+                    $('#errorText').html(ajaxdata['error']);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
                 } else {
-
 
                     // No error, so hide the error if it was displayed previously.
                     $('#errorText').css("display", "none");
-                    $('#smtp_table').css("display", "static");                    
+                    $('#main_output').css("display", "block");                 
                       
                     // ===============SMTP Data============
                     var edge1_send_total = ajaxdata['edge1_send_total'];
@@ -269,14 +268,15 @@
                                                            
                 }
 
-            } else if (xmlHTTP.status==404) {
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {
                 $('#errorText').html('Unable to update data');
-                $('#errorText').css("display", "static");
-                $('#smtp_table').css("display", "none");
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
             }
         }
-        // This GET URL must match the domain in the web browser or it will not work due to javascript security
-        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/exch_ajax', true);
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/msexchange/ajax', true);
         xmlHTTP.send(null);
     }
 
@@ -303,7 +303,7 @@
 
 <body onload="init()">
 <div id="errorText">Error retrieving data</div>
-<table id="exch_table">
+<div id="main_output"><table id="exch_table">
 <tbody>
 <tr><td colspan="4" class="header">Internet SMTP</td></tr>
 <tr>
@@ -356,6 +356,6 @@
     <td><span id="outlook2_rpc_total_spark" class="sparkline"></span></td>   
     <td><span class="value" id="outlook2_rpc_total_value">&nbsp;</span></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 </body></html>
 

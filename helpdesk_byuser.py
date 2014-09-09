@@ -6,19 +6,20 @@ Requires mysql connector in python:  pip install mysql-connector-python
 """
 from __future__ import division    # So division of integers will result in float
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-
+from credentials import WORKDESK_USER
+from credentials import WORKDESK_PASSWORD
 
 
 #=================================SETTINGS======================================
 SAMPLE_INTERVAL = 120
 MAX_RESULTS = 10              #
 mysql_config = {
-    'host': 'workdesk.yourcompany.com',
+    'host': 'workdesk.yourcompany.domain',
     'database': 'workdesk',
-    'user': 'workdesk_report',
-    'password': '**********'
+    'user': WORKDESK_USER,
+    'password': WORKDESK_PASSWORD
 }
 #===============================================================================
 

@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="Cache-control" content="no-cache">
+        <meta application-name="Tintri Monitoring" data-allows-resizing="YES">
+
+<head>
+    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="/static/js/jquery.easypiechart.min.js"></script>
+    <script src="/static/js/rainbowvis.js"></script>    
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesC";
+		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 14px;		    
+            padding-top: 5px;
+		}
+		
+			
+		table {
+		    border-collapse: collapse;
+		    table-layout:fixed;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
+		    border-spacing: 4px; 
+            margin-top: 4px;           
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		}
+		td {
+		    padding: 1px 10px 1px 10px;
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: clip;
+		    text-align: center;
+            
+		}
+
+		
+        #errorText {
+            display: none;
+            width: 100%;            
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            color: rgb(100,100,100);
+            font-size: 20px;
+        }
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+
+        /* CSS For Pie Chart */
+        .chart_large {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            text-align: center;
+        }
+        .chart_large canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }           
+
+        #sample_chart_value {
+            display: inline-block;
+            line-height: 105px;
+            z-index: 2;
+            font-size: 16px;
+        }
+
+		
+	</style>
+
+
+    <script type="text/javascript">
+    var sample_value = "init...";   // Variable will hold the value we want to display as text in the center of the pie chart
+    
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {                     // Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                json_data = JSON.parse(xmlHTTP.responseText);
+                
+                if ("error" in json_data) {       // If there was an error with the data, show it (and hide the charts)
+                    $('#errorText').html(json_data['error']);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
+                } else {                        
+                    $('#errorText').css("display", "none");
+                    $('#main_output').css("display", "block");
+
+                    sample_value = json_data.random_number;             // Pull out the value from the JSON data by name
+
+                    // Update the pie charts (the text in the middle of the chart is updated by the onStep function below) 
+                    $('#sample_chart').data('easyPieChart').update(sample_value);                                    
+
+                }
+            
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {  // There was an error doing the AJAX callback
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/sample/ajax', true);
+        xmlHTTP.send(null);
+    }
+
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('main_table').style.backgroundColor = 'black';            
+        }
+
+        doAJAX()
+        // Call the refresh function every 5 seconds (should match the data interval of the source data)
+        var int=self.setInterval(function(){doAJAX()},5000);
+
+        // Create the pie charts
+        $('#sample_chart').easyPieChart({
+            barColor: function(percent) {
+                // Return a color value based on percent value (white, blue, red)
+                var rainbow = new Rainbow();
+                rainbow.setSpectrum('6196DF','006ce6','ff3000');
+                var hexColor = '#' + rainbow.colourAt(percent);
+                return hexColor;
+            },
+            trackColor: '#333333',
+            scaleColor: false,
+            size: 100,
+            lineWidth: 20,       
+            lineCap: 'butt',
+            easing: 'easeOutBounce',
+            onStep: function(from, to, percent) {
+                $('#sample_chart_value').text(sample_value + "%");
+            }              
+        });
+
+    }
+
+    </script>
+</head>
+	
+<body onload="init()"><div id="errorText"></div>
+<div id="main_output"><table id="main_table">
+<tr>
+    <tr><td class="header">SAMPLE</td></tr>
+    <tr>
+        <td><div class="chart_large" id="sample_chart" data-percent="0"> <div id="sample_chart_value"></div></div></td>        
+    </tr>       
+</tr>
+</table></div>
+
+
+
+</body></html>

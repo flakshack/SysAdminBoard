@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<meta http-equiv="Cache-control" content="no-cache">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Cache-control" content="no-cache">
         <meta application-name="SNMP Environmental" data-allows-resizing="YES">
 
 <head>
@@ -12,66 +12,66 @@
     
 
 
-	<style type="text/css">	
-		@font-face {
-		    font-family: "Roadgeek2005SeriesC";
-		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
-		}
-		
-		body, * {
-		
-		}
-		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
-		    margin: 0;
-		    padding: 0;
-		}
-		
-		fieldset,img {
-		    border: 0;
-		}
-		
-		
-		/* Settin' up the page */
-		html, body, #main  {
-		    overflow: hidden; /* */
-		}
-		
-		body  {
-		    color: white;
-		    font-family: 'Roadgeek2005SeriesC', sans-serif;
-		}
-		body, html, #main {
-			background: transparent !important;		   
-		}
-		
-		h1 {
-		    font-size: 14px;		    
+    <style type="text/css"> 
+        @font-face {
+            font-family: "Roadgeek2005SeriesC";
+            src: url("/static/fonts/Roadgeek 2005 Series C.otf");
+        }
+        
+        body, * {
+        
+        }
+        body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+            margin: 0;
+            padding: 0;
+        }
+        
+        fieldset,img {
+            border: 0;
+        }
+        
+        
+        /* Settin' up the page */
+        html, body, #main  {
+            overflow: hidden; /* */
+        }
+        
+        body  {
+            color: white;
+            font-family: 'Roadgeek2005SeriesC', sans-serif;
+        }
+        body, html, #main {
+            background: transparent !important;        
+        }
+        
+        h1 {
+            font-size: 14px;            
             padding-top: 5px;
-		}
-		
-			
-		table {
-		    border-collapse: collapse;
-		    table-layout:fixed;
-		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
-		    border-spacing: 4px; 
-            margin-top: 4px;           
-		    width: 100%;
-		    -webkit-border-radius: 4px;
-		}
-		td {
-		    padding: 2px 10px 2px 10px;
-		    white-space: nowrap;
-		    overflow: hidden;
-		    text-overflow: clip;
-		    text-align: center;
+        }
+        
             
-		}
+        table {
+            border-collapse: collapse;
+            table-layout:fixed;
+            font-family: 'Roadgeek2005SeriesC', sans-serif;         
+            border-spacing: 4px; 
+            margin-top: 4px;           
+            width: 100%;
+            -webkit-border-radius: 4px;
+        }
+        td {
+            padding: 2px 10px 2px 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+            text-align: center;
+            
+        }
 
         #env_table {
             margin-top: 20px;
         }
-		
+        
         #errorText {
             display: none;
             width: 100%;            
@@ -115,8 +115,8 @@
             font-size: 26px; 
         }
 
-		
-	</style>
+        
+    </style>
 
 
     <script type="text/javascript">
@@ -130,10 +130,10 @@
                 if ("error" in envdata) {       // If there was an error with the data, show it (and hide the charts)
                     $('#errorText').html(envdata['error']);
                     $('#errorText').css("display", "inline");
-                    $('#env_table').css("display", "none");
-                } else {                        
+                    $('#main_output').css("display", "none");
+                } else {                                            
                     $('#errorText').css("display", "none");
-                    $('#env_table').css("display", "static");
+                    $('#main_output').css("display", "block");
 
                     $('#clt_temp').html(envdata['clt_temp']);            
                     $('#clt_humidity').html(envdata['clt_humidity']);
@@ -158,26 +158,31 @@
             } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {
                 $('#errorText').html('Unable to update data');
                 $('#errorText').css("display", "inline");
-                $('#env_table').css("display", "none");
+                $('#main_output').css("display", "none");
             }
         }
-        // This GET URL must match the domain in the web browser or it will not work
-        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/env1_ajax', true);
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/snmp_environmental_1/ajax', true);
         xmlHTTP.send(null);
     }
 
 
-    function init()	{
+    function init() {
         // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
-        if (document.location.href.indexOf('desktop') > -1)	{
+        if (document.location.href.indexOf('desktop') > -1) {
             document.getElementById('env_table').style.backgroundColor = 'black';            
         }
 
-        doAJAX()
+        doAJAX();
         // Call the refresh function every 60 seconds
         var int=self.setInterval(function(){doAJAX()},60000);
 
-        // Create the pie charts
+        create_pie_charts();
+    }
+
+    function create_pie_charts() {
+        
         $('#cold_aisle_chart').easyPieChart({
             barColor: function(percent) {
                 // Return a color value based on percent value (white, blue, red)
@@ -219,9 +224,9 @@
 
     </script>
 </head>
-	
+    
 <body onload="init()"><div id="errorText"></div>
-<table id="env_table">
+<div id="main_output"><table id="env_table">
 <tr>
     <td><span class="chart_large" id="cold_aisle_chart" data-percent="0"> <span class="degree_large" id="cold_aisle_value"></span></span><h1>Cold Aisle</h1></td>
     <td><span class="chart_large" id="hot_aisle_chart" data-percent="0"> <span class="degree_large" id="hot_aisle_value"></span></span><h1>Hot Aisle</h1></td>
@@ -260,7 +265,7 @@
         </table>
     </td>
 </tr>
-</table>
+</table></div>
 
 
 

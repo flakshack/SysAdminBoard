@@ -20,22 +20,21 @@ import json
 import operator
 
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 
-
+from credentials import VNX_REPORTER_USERNAME   # Login info now stored in credentials.py
+from credentials import VNX_REPORTER_PASSWORD   # Login info now stored in credentials.py
 
 #=================================SETTINGS======================================
-VNX_REPORTER_WEBSERVER = "http://your-vnx-reporter-webserver:58080/VNX-MR"
-VNX_REPORTER_USERNAME = "username"
-VNX_REPORTER_PASSWORD = "******"
-VNX_BLOCK_IO_CSV = "http://your-vnx-reporter-webserver:58080/VNX-MR/report.csv?report&select=0-1-4a44114c-4786a14f-b36fc7de-4c614edb-4a3e733b-85cf6d&display=0&mode=nrx&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=2h&itz=America%2FNew_York"
+VNX_REPORTER_WEBSERVER = "http://vnx-reporter:58080/VNX-MR"
+VNX_BLOCK_IO_CSV = "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-4a44114c-4786a14f-b36fc7de-4c614edb-4a3e733b-85cf6d&display=0&mode=nrx&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=2h&itz=America%2FNew_York"
 VNX_BLOCK_READ_STR = '"Timestamp","Read IOPS (IO/s)"'
 VNX_BLOCK_WRITE_STR = '"Timestamp","Write IOPS (IO/s)"'
-VNX_FILE_IO_CSV = "http://your-vnx-reporter-webserver:58080/VNX-MR/report.csv?report&select=0-1-4a44114c-8f267c5c-70bffb61-2809341b-b53a5bb-b0b3e008-80928810&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=2h&itz=America%2FNew_York"
+VNX_FILE_IO_CSV = "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-4a44114c-8f267c5c-70bffb61-2809341b-b53a5bb-b0b3e008-80928810&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=2h&itz=America%2FNew_York"
 VNX_FILE_READ_STR = '"Timestamp","ReadRequests, server_2 (Nb/s)"'
 VNX_FILE_WRITE_STR = '"Timestamp","WriteRequests, server_2 (Nb/s)"'
-VNX_TOP_LUN_CSV = 'http://your-vnx-reporter-webserver:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-49fa3b2c-a3b0f8f9-a541c5e5-4a3e733b-d777d0dd-11adc2b1-98a6d95&display=0&mode=srt&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=5m&itz=America%2FNew_York&amp;d-2692206-s=8&amp;d-2692206-o=1&amp;d-2692206-p=1'
+VNX_TOP_LUN_CSV = 'http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-49fa3b2c-a3b0f8f9-a541c5e5-4a3e733b-d777d0dd-11adc2b1-98a6d95&display=0&mode=srt&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=5m&itz=America%2FNew_York&amp;d-2692206-s=8&amp;d-2692206-o=1&amp;d-2692206-p=1'
 VNX_TOP_LUN_START = '"Array","LUN","Availability (%)","Storage Group","Storage Pool","Storage Pool type","RAID Level","Capacity (GB)","IOPS","Bandwidth (MB/s)","Utilization (%)","Service Time (ms)","Response Time (ms)","Queue Length"'
 TOP_LUNS_TO_RETURN = 6
 SAMPLE_INTERVAL = 120

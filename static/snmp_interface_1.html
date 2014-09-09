@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta http-equiv="Cache-control" content="no-cache">
+        <meta application-name="SysAdminBoard - Graph" data-allows-resizing="YES">
+
+<head>
+
+	<style type="text/css">	
+		@font-face {
+		    font-family: "Roadgeek2005SeriesC";
+		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
+		}
+		
+		body, * {
+		
+		}
+		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+		    margin: 0;
+		    padding: 0;
+		}
+		
+		fieldset,img {
+		    border: 0;
+		}
+		
+		
+		/* Settin' up the page */
+		html, body, #main  {
+		    overflow: hidden; /* */
+		}
+		
+		body  {
+		    color: white;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;
+		}
+		body, html, #main {
+			background: transparent !important;		   
+		}
+		
+		h1 {
+		    font-size: 14px;		    
+            padding-top: 5px;
+		}
+		
+			
+		table {
+		    border-collapse: collapse;
+		    table-layout:fixed;
+		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
+		    border-spacing: 4px; 
+            margin-top: 4px;           
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		}
+		td {
+		    padding: 1px 10px 1px 10px;
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: clip;
+		    text-align: center;
+            
+		}
+
+        .header {
+            text-align: left;
+            font-size: 20px;
+        }
+
+
+		
+	</style>
+    <script type="text/javascript">
+    function init() {
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1) {
+            document.getElementById('main_table').style.backgroundColor = 'black';            
+        }
+    }
+    </script>
+
+</head>
+	
+<body onload="init()"><div id="errorText"></div>
+<div id="main_output"><table id="main_table">
+<tr>
+    <tr><td class="header">Graph</td></tr>
+    <tr>
+        <td>There is no custom web page associated with this data.  Instead, you should load the data into the Panic
+            Statusboard iPad app's built-in Graph Gadget (using the Ajax url).
+        </td>        
+    </tr>       
+</tr>
+</table></div>
+
+
+
+</body></html>

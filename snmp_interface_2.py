@@ -10,8 +10,9 @@ from __future__ import division    # So division of integers will result in floa
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 import time
 import json
+from credentials import SNMP_COMMUNITY
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 # Simple HTTP Server for testing
 # python -m SimpleHTTPServer 9000
@@ -36,14 +37,14 @@ GRAPH_TITLE = "Bandwidth (Mbps)"
 # uptime_oid:  This is the SNMP OID for the device's uptime (so we know what the time was when we measured the counter)
 # name:  This is the name of the device as it will appear on the graph
 DEVICES = (
-    {"ip": "cisco-rh-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH RX"},
-    {"ip": "cisco-rh-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH TX"},
-    {"ip": "cisco-tri-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI RX"},
-    {"ip": "cisco-tri-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI TX"},
-    {"ip": "cisco-clt-asa1", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET RX"},
-    {"ip": "cisco-clt-asa1", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET TX"},
-    {"ip": "cisco-clt-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT TX"},
-    {"ip": "cisco-clt-wan", "community": "public", "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT RX"}
+    {"ip": "cisco-rh-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH RX"},
+    {"ip": "cisco-rh-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH TX"},
+    {"ip": "cisco-tri-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI RX"},
+    {"ip": "cisco-tri-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI TX"},
+    {"ip": "cisco-clt-asa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET RX"},
+    {"ip": "cisco-clt-asa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET TX"},
+    {"ip": "cisco-clt-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT TX"},
+    {"ip": "cisco-clt-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT RX"}
 )
 #================================================================================
 

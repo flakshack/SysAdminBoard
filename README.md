@@ -38,21 +38,23 @@ This code talks to an EMC VNX Reporting and Monitoring web server to pull down p
 
 This code monitors a Microsoft Exchange server to display SMTP message totals for the day along with RPC and latency information (per CAS server).  Note that this code requires my [pyPerfmon](https://github.com/flakshack/pyPerfmon) app running on each Exchange server to be monitored.
 
+###Tintri Monitoring
+![Tintri Monitoring Gadget](readme-images/exch.png)
+
+This code monitors a Tintri hybrid storage device using REST API calls.
+
+
+
 ## Code Layout
 Individual python files are designed to be run independently for testing.  You can run any of the python files directly and it will output data in JSON format.  (Personally, I recommend loading it up in the [PyCharm](http://www.jetbrains.com/pycharm/) debugger).  
 
-You will need to edit the files to provide your server addresses and credentials.  Although the python files are hidden behind the web server, the credentials are being stored in plain text, so be sure that you are using restricted accounts.  For example, a read-only VMware vSphere account is all we need.
+You will need to edit the files to provide your server ip addresses or SNMP OIDs.  You should edit the credentials.py file to store usernames and passwords.  Although the python files are hidden behind the web server, the credentials are being stored in plain text, so be sure that you are using restricted accounts.  For example, a read-only VMware vSphere account is all we need.
 
-The static HTML pages are loaded by the Statusboard iPad App which then uses AJAX to retrieve the JSON data.  You will need to edit each HTML file to replace the name of the server where the AJAX function will grab the JSON data (search and replace http://sysadminboard.yourcompany.com/).  *Keep in mind that Javascript security causes failures if you try to load the HTML and AJAX/JSON from different webservers.*
+The static HTML pages are loaded by the Statusboard iPad App which then uses AJAX to retrieve the JSON data. 
 
-The main function here is the webserver.py. This launches the CherryPy webserver and loads each data generator into a separate thread.  The webserver code has 4 distinct sections that you'll need to edit according to which modules you want to run.
+The main function here is the webserver.py. This launches the CherryPy webserver and loads each data generator into a separate thread.  To enable/disable a module, find the MODULES section and call create a SysAdminBoardModule object, specifying the module filename (without the .py).  For example:  SysAdminBoardModule('vmware_host')  will load the vmware_host.py file, setup the webserver URLs and the process callback thread.
 
-1. The Class MyWebServer object defines the URL aliases for the web server.  Each gadget has 2 URLs, one that loads the HTML and another that the HTML javascript calls to get the JSON data.
-2. The Callback Functions section creates a function for each data module and calls its generate_json() function.
-3. The Register Callback Functions section is where we register each of the Callback Functions with CherryPy (so they'll each be run in their own thread).
-4. The final section starts the webserver.
-
-You can test the individual HTML pages in any web browser (the integrated Firefox or Chrome javascript debuggers are great).  Since the StatusBoard iPad app requires white fonts on a white background, it can be difficult to see the output correctly.  If you load the page with this URL:  (yourwebserver.com/static/vmhost.html?desktop), it will change the background to black for easy testing.
+If you browse to the webserver, it will now display a list of loaded modules with links to display the output appropriately (HTML and AJAX).  Note that the webserver loads on port 8080 by default unless you make the iptables changes below to redirect from port 80.
 
 ## Simple Linux Configuration
 Here are some directions for a base CentOS Linux server install.
@@ -68,6 +70,8 @@ pip install CherryPy
 pip install -U pysphere
 pip install mechanize
 pip install mysql-connector-python
+pip install importlib
+pip install routes
 ```
 
 Install pysnmp
@@ -111,8 +115,21 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 ##To Do
 Here's a quick list of improvements I'd like to make to the system when I have time.
 * Replace static HTML code with Templating system (Mako, Genshi or something else).  *Currently HTML tables are manually edited to match the expected output*
-* Move login credentials and variables to a single location
-* Improve/Simplify webserver.py to make maintenance and adding new modules easier
+
+
+##Change Log
+2014-09-09
+* Credentials are now stored in a single file.
+* Webserver.py has been simplified to avoid repeated code.  
+	* Modules are now enabled/disabled by a single line: *SysAdminBoardModule('somemodulename')* which automatically imports the python file, adds the necessary entries to the webserver and sets up the process threads.  
+	* .HTML files have been renamed to match the associated .PY module.  
+	* URLs have also changed to match the module name.  http://server/module and http://server/module/ajax
+	* Note that these changes require 2 new python modules (shown above: importlib and routes)
+* Browsing to the root of the web site now displays links for all loaded modules (HTML and AJAX).
+* A new sample module is included and is the only module enabled by default.
+* New Tintri (REST API) monitoring gadget.
+* Fixed HTML error handling (so pages will appear blank when the server is not responsive).
+* HTML javascript updated to avoid hardcoded servername references.
 
 
 ##Links to Projects used here

@@ -205,8 +205,9 @@
                 $('#category_table').css("display", "none");
             }
         }
-        // This GET URL must match the domain in the web browser or it will not work due to javascript security
-        xmlHTTP.open("GET", 'http://sysadminboard.yourcompany.com/hd_bycategory_ajax', true);
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server        
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/helpdesk_bycategory/ajax', true);        
         xmlHTTP.send(null);
     }
 

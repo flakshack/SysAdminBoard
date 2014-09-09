@@ -10,8 +10,9 @@ from __future__ import division    # So division of integers will result in floa
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 import time
 import json
+from credentials import SNMP_COMMUNITY
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 # Simple HTTP Server for testing
 # python -m SimpleHTTPServer 9000
@@ -35,8 +36,8 @@ GRAPH_TITLE = "Bandwidth (Mbps)"
 # oid:  This is the SNMP OID interface counter we'll be measuring.
 # uptime_oid:  This is the SNMP OID for the device's uptime (so we know what the time was when we measured the counter)
 # name:  This is the name of the device as it will appear on the graph
-DEVICE_IP = "your-cisco-switch-ip-address"
-DEVICE_SNMP = "public"
+DEVICE_IP = "cisco-clt-core"
+DEVICE_SNMP = SNMP_COMMUNITY
 DEVICE_UPTIME_OID = "1.3.6.1.2.1.1.3.0"
 AGGREGATE_INTERFACES = (
     {"oid": ["1.3.6.1.2.1.31.1.1.1.6.1", "1.3.6.1.2.1.31.1.1.1.10.1", "1.3.6.1.2.1.31.1.1.1.6.62", "1.3.6.1.2.1.31.1.1.1.10.62"], "name": "16"},

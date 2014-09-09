@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import urllib2
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 
 
@@ -65,7 +65,7 @@ def generate_json(perf_monitor):
 
     try:
         # ====================EDGE1=====================
-        response = urllib2.urlopen('http://edge1.yourcompany.local:8001')
+        response = urllib2.urlopen('http://edge1.yourcompany.domain:8001')
         data = json.load(response)
         if "error" in data:
             perf_monitor.json = json.dumps({"error": "Error from pyPerfMon: " + data["error"]})
@@ -106,7 +106,7 @@ def generate_json(perf_monitor):
 
 
         # ====================EDGE2=====================
-        response = urllib2.urlopen('http://edge2.yourcompany.local:8001')
+        response = urllib2.urlopen('http://edge2.yourcompany.domain:8001')
         data = json.load(response)
         if "error" in data:
             perf_monitor.json = json.dumps({"error": "Error from pyPerfMon: " + data["error"]})
@@ -149,7 +149,7 @@ def generate_json(perf_monitor):
 
         # CAS Perf Data Format: {"rpc_avg_latency": 7.0, "rpc_active_users": 22.0, "rpc_total": 30777797.0}
         # ====================OUTLOOK1=====================
-        response = urllib2.urlopen('http://outlook1.yourcompany.local:8001')
+        response = urllib2.urlopen('http://outlook1.yourcompany.domain:8001')
         data = json.load(response)
         if "error" in data:
             perf_monitor.json = json.dumps({"error": "Error from pyPerfMon Outlook1: " + data["error"]})
@@ -177,7 +177,7 @@ def generate_json(perf_monitor):
 
 
         # ====================OUTLOOK2=====================
-        response = urllib2.urlopen('http://outlook2.yourcompany.local:8001')
+        response = urllib2.urlopen('http://outlook2.yourcompany.domain:8001')
         data = json.load(response)
         if "error" in data:
             perf_monitor.json = json.dumps({"error": "Error from pyPerfMon Outlook2: " + data["error"]})

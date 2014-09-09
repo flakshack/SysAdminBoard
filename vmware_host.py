@@ -10,17 +10,18 @@
 """
 from __future__ import division    # So division of integers will result in float
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-
+from credentials import VMWARE_VCENTER_USERNAME
+from credentials import VMWARE_VCENTER_PASSWORD
 
 
 #=================================SETTINGS======================================
 # VCenter Servers
 VCENTER_SERVERS = [
-    {"name": "vcenter.yourcompany.com", "username": "domain\\username", "password": "******"},
-    {"name": "vcenter2.yourcompany.com", "username": "domain\\username", "password": "*******"},
-    {"name": "vcenter3.yourcompany.com", "username": "domain\\username", "password": "********"}
+    {"name": "vcenter.yourcompany.domain", "username": VMWARE_VCENTER_USERNAME, "password": VMWARE_VCENTER_PASSWORD},
+    {"name": "hs-vcenter.yourcompany.domain", "username": VMWARE_VCENTER_USERNAME, "password": VMWARE_VCENTER_PASSWORD},
+    {"name": "view-vcenter.yourcompany.domain", "username": VMWARE_VCENTER_USERNAME, "password": VMWARE_VCENTER_PASSWORD}
 ]
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30

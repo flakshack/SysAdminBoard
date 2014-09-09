@@ -10,15 +10,16 @@
 """
 from __future__ import division    # So division of integers will result in float
 
-__author__ = 'forge@flakshack.com (Scott Vintinner)'
+__author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-
+from credentials import VMWARE_VCENTER_USERNAME
+from credentials import VMWARE_VCENTER_PASSWORD
 
 
 #=================================SETTINGS======================================
-VCENTER_SERVER = "vcenter.yourcompany.com"
-VCENTER_USERNAME = "domain\\username"
-VCENTER_PASSWORD = "******"
+VCENTER_SERVER = "vcenter.yourcompany.domain"
+VCENTER_USERNAME = VMWARE_VCENTER_USERNAME
+VCENTER_PASSWORD = VMWARE_VCENTER_PASSWORD
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30
 MAX_VM_RESULTS = 11              # Number of VMs to get data (should match html file)
