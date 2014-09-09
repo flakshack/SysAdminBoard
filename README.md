@@ -39,7 +39,7 @@ This code talks to an EMC VNX Reporting and Monitoring web server to pull down p
 This code monitors a Microsoft Exchange server to display SMTP message totals for the day along with RPC and latency information (per CAS server).  Note that this code requires my [pyPerfmon](https://github.com/flakshack/pyPerfmon) app running on each Exchange server to be monitored.
 
 ###Tintri Monitoring
-![Tintri Monitoring Gadget](readme-images/exch.png)
+![Tintri Monitoring Gadget](readme-images/tintri.png)
 
 This code monitors a Tintri hybrid storage device using REST API calls.
 
