@@ -94,12 +94,12 @@
         }
               
         .category_name {
-            width: 200px;
+            width: 160px;
             display:inline-block;  
         }
 
         .meter { 
-            width: 300px;
+            width: 200px;
             height: 12px;  /* Can be anything */
             position: relative;
             background: #222222;
@@ -131,7 +131,7 @@
                  -moz-border-radius-bottomleft: 20px;
                         border-top-left-radius: 20px;
                      border-bottom-left-radius: 20px;
-            background-color: #00ba00;
+            background-color: #006ce6;
 
             -webkit-box-shadow: 
               inset 0 2px 9px  rgba(255,255,255,0.3),
@@ -146,7 +146,7 @@
         .meter > .response {
             display: block;
             height: 100%;
-            background-color: #006ce6;
+            background-color: #647076;
 
             -webkit-box-shadow: 
               inset 0 2px 9px  rgba(255,255,255,0.3),
@@ -191,11 +191,31 @@
 	                } else {
 						$('#open_tickets').html(ticket_count + '<img src="/static/images/up.png" class="ticket_icon" />');
 	                }
+
+                    // Calculate the max of tickets + responses
+                    var meter_max = 0;
+                    for (var i=0; i<category_array.length; i++) {
+                        var category_total = category_array[i]["tickets"] + category_array[i]["responses"];
+                        if (meter_max < category_total) {
+                            meter_max = category_total;
+                        }
+                    }
+
                     // Loop through the results and update the HTML with the new values
                     for (var i=0; i<category_array.length; i++) {
+                        var current_tickets = category_array[i]["tickets"];
+                        var current_responses = category_array[i]["responses"];
                         $('#cat' + i ).html(category_array[i]["category"]);
-                        $('#cat' + i + '_tickets').html(category_array[i]["tickets"]);
-                        $('#cat' + i + '_responses').html(category_array[i]["responses"]);
+                        $('#cat' + i + '_tickets').html(current_tickets);
+                        $('#cat' + i + '_responses').html(current_responses);
+
+                        // Calculate how wide the meter should be and set the width
+                        var tickets_width = Math.round((current_tickets / meter_max) * 100);
+                        var responses_width = Math.round((current_responses / meter_max) * 100);
+                        if (tickets_width < 10) { tickets_width = 10; }
+                        if (responses_width < 10) { responses_width = 10; }
+                        $('#cat' + i + '_tickets_meter').css("width", tickets_width + '%');
+                        $('#cat' + i + '_responses_meter').css("width", responses_width + '%');
                     }
                 }
 
@@ -230,26 +250,121 @@
 <div id="errorText"></div>
 <table id="category_table">
 <tbody>
-<tr><td colspan="3" class="header">Helpdesk</td></tr>
-<tr><td id="open_tickets" class="ticket_counter tickets_up"></td></tr>
-<tr><td></td><td colspan="2">
+<tr><td class="header">Helpdesk</td></tr>
+<tr><td colspan="3" id="open_tickets" class="ticket_counter tickets_up"></td></tr>
 
+<tr><td id="cat0" class="category_name"></td><td colspan="2">
 <div class="meter">
-    <div class="ticket" style="width: 25%"><div class="label">36</div></div><div class="response" style="width: 50%"><div class="label">121</div></div>
+        <div id="cat0_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat0_tickets" class="label">00</div>
+        </div>
+        <div id="cat0_responses_meter" class="response" style="width:50%">
+            <div id="cat0_responses" class="label">00</div>
+        </div>
 </div>
-
-
 </td></tr>
-<tr><td id="cat0" class="category_name"></td><td id="cat0_tickets"></td><td id="cat0_responses"></td></tr>
-<tr><td id="cat1" class="category_name"></td><td id="cat1_tickets"></td><td id="cat1_responses"></td></tr>
-<tr><td id="cat2" class="category_name"></td><td id="cat2_tickets"></td><td id="cat2_responses"></td></tr>
-<tr><td id="cat3" class="category_name"></td><td id="cat3_tickets"></td><td id="cat3_responses"></td></tr>
-<tr><td id="cat4" class="category_name"></td><td id="cat4_tickets"></td><td id="cat4_responses"></td></tr>
-<tr><td id="cat5" class="category_name"></td><td id="cat5_tickets"></td><td id="cat5_responses"></td></tr>
-<tr><td id="cat6" class="category_name"></td><td id="cat6_tickets"></td><td id="cat6_responses"></td></tr>
-<tr><td id="cat7" class="category_name"></td><td id="cat7_tickets"></td><td id="cat7_responses"></td></tr>
-<tr><td id="cat8" class="category_name"></td><td id="cat8_tickets"></td><td id="cat8_responses"></td></tr>
-<tr><td id="cat9" class="category_name"></td><td id="cat9_tickets"></td><td id="cat9_responses"></td></tr>
+
+<tr><td id="cat1" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat1_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat1_tickets" class="label">00</div>
+        </div>
+        <div id="cat1_responses_meter" class="response" style="width:50%">
+            <div id="cat1_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+
+<tr><td id="cat2" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat2_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat2_tickets" class="label">00</div>
+        </div>
+        <div id="cat2_responses_meter" class="response" style="width:50%">
+            <div id="cat2_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat3" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat3_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat3_tickets" class="label">00</div>
+        </div>
+        <div id="cat3_responses_meter" class="response" style="width:50%">
+            <div id="cat3_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat4" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat4_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat4_tickets" class="label">00</div>
+        </div>
+        <div id="cat4_responses_meter" class="response" style="width:50%">
+            <div id="cat4_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat5" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat5_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat5_tickets" class="label">00</div>
+        </div>
+        <div id="cat5_responses_meter" class="response" style="width:50%">
+            <div id="cat5_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat6" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat6_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat6_tickets" class="label">00</div>
+        </div>
+        <div id="cat6_responses_meter" class="response" style="width:50%">
+            <div id="cat6_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat7" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat7_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat7_tickets" class="label">00</div>
+        </div>
+        <div id="cat7_responses_meter" class="response" style="width:50%">
+            <div id="cat7_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat8" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat8_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat8_tickets" class="label">00</div>
+        </div>
+        <div id="cat8_responses_meter" class="response" style="width:50%">
+            <div id="cat8_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+<tr><td id="cat9" class="category_name"></td><td colspan="2">
+<div class="meter">
+        <div id="cat9_tickets_meter" class="ticket" style="width:50%">
+            <div id="cat9_tickets" class="label">00</div>
+        </div>
+        <div id="cat9_responses_meter" class="response" style="width:50%">
+            <div id="cat9_responses" class="label">00</div>
+        </div>
+</div>
+</td></tr>
+
+
 </tbody></table>
 </body></html>
 
