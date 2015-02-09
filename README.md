@@ -3,7 +3,7 @@ SysAdminBoard
 
 SysAdminBoard is a collection of DIY panels and data generators for the [Panic StatusBoard iPad App](http://www.panic.com/statusboard/) designed to display data relevant to Sysadmins.  Code is written in Python, HTML and Javascript and served on a simple [CherryPy Webserver](http://cherrypy.org/) (included).
 
-(New) Originally this code was intended only for use on the iPad app, but I had some stability problems that forced me to restart the iPad at least once a day.  To work around this problem, I replaced our iPads with a couple ASUS Chromeboxes and modified the code to run as a simple web page. I've added new HTML pages to replicate the clock, twitter, weather and graph functionality of the iPad app.
+(New) Originally this code was intended only for use on the iPad app, but I had some stability problems that forced me to restart the iPad at least once a day.  To work around this problem, I replaced our iPads with a couple ASUS Chromeboxes and modified the code to run as a simple web page. I've added new HTML pages to replicate the clock, twitter, weather and graph functionality of the iPad app.  The code will continue to be compatible with the Panic Statusboard iPad app.
 
 This project is not intended to be a ready-to-deploy solution.  However, if you are comfortable with Python, you should be able to get this working without much effort.
 
