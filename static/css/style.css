@@ -1,0 +1,72 @@
+
+@font-face {
+    font-family: "Roadgeek2014SeriesC";
+    src: url("/static/fonts/Roadgeek 2014 Series C.ttf");
+}        
+@font-face {
+    font-family: "Roadgeek2014SeriesD";
+    src: url("/static/fonts/Roadgeek 2014 Series D.ttf");
+}        
+
+body, * {
+
+}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
+    margin: 0;
+    padding: 0;
+    /* Make fonts appear normal (non-bold) in regular browsers */
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;            
+}
+
+fieldset,img {
+    border: 0;
+}
+
+html, body, #main  {
+    overflow: hidden; /* */
+}
+
+body  {
+    color: white;
+    font-family: 'Roadgeek2014SeriesC', sans-serif;
+    text-transform: uppercase;
+    font-size: 14pt; 
+    line-height: 15px;       
+}
+body, html, #main {
+    background: transparent; !important;        
+}
+ 
+h1 {
+    font-size: 36px;
+    color: white;
+}
+
+h2 {
+    font-size: 12pt;
+    color: rgb(100,100,100);
+}
+
+#errorText {
+    display: none;
+    width: 100%;            
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    color: rgb(100,100,100);
+    font-size: 20px;
+}
+
+#main_table {
+    margin-top: 8px;
+}
+
+.header {
+    text-align: left;
+    font-size: 18pt;
+    line-height: 22px; 
+    text-transform: uppercase; 
+}   
+
+
