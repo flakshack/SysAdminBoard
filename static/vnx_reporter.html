@@ -3,50 +3,18 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta http-equiv="Cache-control" content="no-cache" />
         <meta application-name="EMC VNX Performance" data-allows-resizing="YES" data-min-size="6,4" data-allows-scrolling="NO">
-
-
-    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
-    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
-    <script type="text/javascript" src="/static/js/Chart.min.js" ></script>
-	<style type="text/css">	
-		@font-face {
-		    font-family: "Roadgeek2005SeriesD";
-		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
-		}
-		
-		body, * {
-		
-		}
-		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
-		    margin: 0;
-		    padding: 0;
-		}
-		
-		fieldset,img {
-		    border: 0;
-		}
-		
-		
-		/* Settin' up the page */
-		html, body, #main  {
-		    overflow: hidden; /* */
-		}
-		
-		body  {
-		    color: white;
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
-		}
-		body, html, #main {
-			background: transparent !important;		   
-		}
-		
-
+    
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script> 
+    
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />          
+	<style type="text/css">		
 		table {
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    font-family: 'Roadgeek2014SeriesC', sans-serif;
 		    text-transform: uppercase;		   
 		    width: 100%;
 		    -webkit-border-radius: 4px;
-            margin: 5px 2px 5px 5px;
+            margin: 4px 2px 5px 5px;
             border-spacing: 2px;
 
 		}
@@ -83,11 +51,6 @@
             text-align: left;
         }
 
-        .header {
-            text-align: left;
-            font-size: 20px;
-        }
-
         .current_value {
             color: rgb(100,112,118);
             text-transform: none;
@@ -105,7 +68,8 @@
         }
 
         .key {
-            font-size: 12px;
+            font-size: 15px;
+            line-height: 14px;
             text-transform: none;
         }
 
@@ -116,18 +80,16 @@
 
         .lun_details {
             -webkit-border-radius: 4px;
-            border-radius: 12px;
+            border-radius: 6px;
             border: 1px solid #222222;
             width: 98%;
-            font-size: 12px
-
+            font-size: 15px;
+            line-height: 14px;  
+            text-transform: none;            
         }
 
         .lun_name {
-            text-align: left;
-        }
-        .lun_details {
-            text-transform: none;
+            text-align: left;          
         }
 
         .lun_stats{
@@ -136,17 +98,6 @@
         .lun_stats span {
             color: #ffffff
         }
-
-        #errorText {
-            display: none;
-            width: 100%;            
-            position: absolute;
-            text-align: center;
-            top: 50%;
-            color: rgb(100,100,100);
-            font-size: 20px;
-        }
-
 
 	</style>
 
@@ -182,7 +133,7 @@
                     $('#block_write_spark').sparkline(ajaxdata["block_write"], {
                         type: 'line',
                         height: '38px',
-                        width: '160px',
+                        width: '120px',
                         lineColor: '#006ce6',
                         lineWidth: 1,
                         fillColor: '#006ce6',
@@ -196,7 +147,7 @@
                     $('#block_read_spark').sparkline(ajaxdata["block_read"], {
                         type: 'line',
                         height: '38px',
-                        width: '160px',
+                        width: '120px',
                         lineColor: '#ffc600',
                         lineWidth: 1,
                         fillColor: '#ffc600',
@@ -210,7 +161,7 @@
                     $('#file_write_spark').sparkline(ajaxdata["file_write"], {
                         type: 'line',
                         height: '38px',
-                        width: '160px',
+                        width: '120px',
                         lineColor: '#006ce6',
                         lineWidth: 1,
                         fillColor: '#006ce6',
@@ -224,7 +175,7 @@
                     $('#file_read_spark').sparkline(ajaxdata["file_read"], {
                         type: 'line',
                         height: '38px',
-                        width: '160px',
+                        width: '120px',
                         lineColor: '#ffc600',
                         lineWidth: 1,
                         fillColor: '#ffc600',

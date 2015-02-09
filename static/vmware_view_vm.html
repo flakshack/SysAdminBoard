@@ -4,59 +4,20 @@
 		<meta http-equiv="Cache-control" content="no-cache" />
         <meta application-name="VMware VM Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
 
-
-    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+    
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />       
 	<style type="text/css">	
-		@font-face {
-		    font-family: "Roadgeek2005SeriesD";
-		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
-		}
 		
-		body, * {
-		
-		}
-		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
-		    margin: 0;
-		    padding: 0;
-		}
-		
-		fieldset,img {
-		    border: 0;
-		}
-		
-		
-		/* Settin' up the page */
-		html, body, #main  {
-		    overflow: hidden; /* */
-		}
-		
-		body  {
-		    color: white;
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
-		}
-		body, html, #main {
-			background: transparent !important;		   
-		}
-		
-		h1 {
-		    font-size: 36px;
-		    color: white;
-		}
-		
-		h2 {
-		    font-size: 12px;
-		    color: rgb(100,100,100);
-		}
-			
 		table {
 		    border-collapse: collapse;
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    font-family: 'Roadgeek2014SeriesD', sans-serif;
 		    text-transform: uppercase;
 		    border-spacing: 0px 4px;
 		    width: 100%;
 		    -webkit-border-radius: 4px;
-		    margin: 8px 4px 0px 4px;
+		    margin: 4px 4px 0px 4px;
 		}
 		td {
 		    white-space: nowrap;
@@ -96,21 +57,6 @@
             display:inline-block;   
         }
 
-        #errorText {
-            display: none;
-            width: 100%;            
-            position: absolute;
-            text-align: center;
-            top: 50%;
-            color: rgb(100,100,100);
-            font-size: 20px;
-        }
-
-        .header {
-            text-align: left;
-            font-size: 20px;
-        }
-
         .value {
             display: none;
         }
@@ -119,7 +65,7 @@
             margin-left: 0.1em;
             text-transform: none; 
             color: rgb(100,112,118);
-        }  
+        } 
                
 
 

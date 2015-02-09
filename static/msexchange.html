@@ -5,44 +5,16 @@
         <meta application-name="Exchange Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
 
 
-    <script type="text/javascript" src="/static/js/jquery-1.11.0.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
     <script type="text/javascript" src="/static/js/flipcounter.js" ></script>
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />           
 	<style type="text/css">	
-		@font-face {
-		    font-family: "Roadgeek2005SeriesD";
-		    src: url("/static/fonts/Roadgeek 2005 Series D.otf");
-		}
-		
-		body, * {
-		
-		}
-		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
-		    margin: 0;
-		    padding: 0;
-		}
-		
-		fieldset,img {
-		    border: 0;
-		}
-		
-		
-		/* Settin' up the page */
-		html, body, #main  {
-		    overflow: hidden; /* */
-		}
-		
-		body  {
-		    color: white;
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
-		}
-		body, html, #main {
-			background: transparent !important;		   
-		}
-			
+
 		table {
 		    border-collapse: collapse;
-		    font-family: 'Roadgeek2005SeriesD', sans-serif;
+		    font-family: 'Roadgeek2014SeriesC', sans-serif;
 		    text-transform: uppercase;
 		    border-spacing: 0px 4px;
 		    width: 100%;
@@ -62,34 +34,23 @@
             color: rgb(100,112,118);  
             text-transform: none;      
         }
-        .server_name {            
-            font-size: 14px;
-        } 
+
         .value {
-            font-size: 12px;
+            font-size: 15px;            
         }  
         .unit {
-            font-size: 12px;
+            font-size: 15px;            
             color: rgb(100,112,118); 
             text-transform: none;       
         }             
         .counter_name {
             text-transform: none;
-            font-size: 12px;            
-        }
-        #errorText {
-            display: none;
-            width: 100%;            
-            position: absolute;
-            text-align: center;
-            top: 50%;
-            color: rgb(100,100,100);
-            font-size: 20px;
+            font-size: 15px;            
         }
 
         .header {
-            text-align: left;
-            font-size: 14px;
+            font-size: 20px;
+            line-height: 16px;
             padding-bottom: 4px;
         } 
 

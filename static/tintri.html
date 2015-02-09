@@ -5,55 +5,21 @@
         <meta application-name="Tintri Monitoring" data-allows-resizing="YES">
 
 <head>
-    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.easing.min.js" ></script>    
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
-    <script src="/static/js/jquery.easypiechart.min.js"></script>
-    <script src="/static/js/rainbowvis.js"></script>    
+    <script type="text/javascript" src="/static/js/jquery.easypiechart.min.js"></script>
+    <script type="text/javascript" src="/static/js/rainbowvis.js"></script>  
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />             
 	<style type="text/css">	
-		@font-face {
-		    font-family: "Roadgeek2005SeriesC";
-		    src: url("/static/fonts/Roadgeek 2005 Series C.otf");
-		}
-		
-		body, * {
-		
-		}
-		body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {
-		    margin: 0;
-		    padding: 0;
-		}
-		
-		fieldset,img {
-		    border: 0;
-		}
-		
-		
-		/* Settin' up the page */
-		html, body, #main  {
-		    overflow: hidden; /* */
-		}
-		
-		body  {
-		    color: white;
-		    font-family: 'Roadgeek2005SeriesC', sans-serif;
-		}
-		body, html, #main {
-			background: transparent !important;		   
-		}
-		
-		h1 {
-		    font-size: 14px;		    
-            padding-top: 5px;
-		}
-		
-			
+	
 		table {
 		    border-collapse: collapse;
 		    table-layout:fixed;
-		    font-family: 'Roadgeek2005SeriesC', sans-serif;		    
+		    font-family: 'Roadgeek2014SeriesC', sans-serif;		    
 		    border-spacing: 4px; 
-            margin-top: 4px;           
+            margin-top: 2px;           
 		    width: 100%;
 		    -webkit-border-radius: 4px;
 		}
@@ -66,29 +32,13 @@
             
 		}
 
-	
-        #errorText {
-            display: none;
-            width: 100%;            
-            position: absolute;
-            text-align: center;
-            top: 50%;
-            color: rgb(100,100,100);
-            font-size: 20px;
-        }
-
-        .header {
-            text-align: left;
-            font-size: 20px;
-        }
-
         table .detail_table {
             margin-top: 12px;
         }
 
         .detail_table td { 
             text-align: left;           
-            font-size: 14px;            
+            font-size: 16px;            
             padding: 1px;
         }
 
@@ -104,7 +54,8 @@
         } 
 
         .stat_name {
-            width: 55px;
+            width: 60px;
+            text-transform: none;
         }
         .stat_value {
             width: 55px ;
@@ -127,23 +78,21 @@
             display: inline-block;
             line-height: 105px;
             z-index: 2;
-            font-size: 16px;
         }
         #iops_chart_value:after {
             content: 'iops';
             margin-left: 0.1em;
-            font-size: 16px; 
+            text-transform: none;            
         }  
         #space_used_chart_value {
             display: inline-block;
             line-height: 105px;
             z-index: 2;
-            font-size: 16px;
         }
         #space_used_chart_value:after {
-            content: 'GB';
+            content: 'gb';
             margin-left: 0.1em;
-            font-size: 16px; 
+            text-transform: none;            
         }  
 		
 	</style>
