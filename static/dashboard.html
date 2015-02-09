@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Cache-control" content="no-cache">
+<title>Sysadmin Statusboard</title>
+<style>
+
+  body {
+    background-color: black;
+    margin:0;
+    padding: 0;
+  }
+  iframe {
+    border:none;
+  }
+  /* Panel sizes are in 64 bit increments -6 bits for padding */
+  .panel4x4 {
+    height:246px;
+    width:250px;        
+  }
+  .panel4x5 {    
+    height:246px;
+    width:314px;         
+  }
+  .panel4x6 {
+    height:246px;
+    width:378px;
+  }  
+  .panel4x7 {
+    height:246px;
+    width:442px; 
+  }  
+  .panel4x8 {
+    height:246px;
+    width: 506px;
+  }      
+  div {
+    border-radius: 6px;    
+    border-width: 1px;
+    border-style:solid;
+    border-color: #333333 #333333 #222222 #333333;
+    float:left; 
+    margin: 1px 1px 1px 1px; 
+    background: linear-gradient(#222222, black);
+  }
+
+
+</style>
+</head>
+<body><!-- At 1344x768, there are 21x12 panel blocks (64 pixels) -->
+<!-- Row 1 -->
+<div><iframe class="panel4x4" src="clock/index.html"></iframe></div>
+<div><iframe class="panel4x4" src="weather.html"></iframe></div>
+<div><iframe class="panel4x4" src="sample.html"></iframe></div>
+<div><iframe class="panel4x8" src="twitter.html"></iframe></div>
+<!--
+<div><iframe class="panel4x7" src="vnx_reporter_pool_io.html"></iframe></div>
+<div><iframe class="panel4x6" src="vmware_view_vm.html"></iframe></div>
+<div><iframe class="panel4x4" src="msexchange.html"></iframe></div>
+<div><iframe class="panel4x4" src="tintri.html"></iframe></div>
+<div><iframe class="panel4x6" src="vmware_vm.html"></iframe></div>
+<div><iframe class="panel4x7" src="vmware_host.html"></iframe></div>
+<div><iframe class="panel4x7" src="snmp_interface_1.html"></iframe></div>
+<div><iframe class="panel4x7" src="snmp_interface_3.html"></iframe></div>
+<div><iframe class="panel4x7" src="snmp_interface_2.html"></iframe></div>
+<div><iframe class="panel4x8" src="snmp_interface_4.html"></iframe></div>
+<div><iframe class="panel4x8" src="snmp_interface_5.html"></iframe></div>
+<div><iframe class="panel4x4" src="snmp_environmental_1.html"></iframe></div>
+<div><iframe class="panel4x8" src="twitter.html"></iframe></div>
+-->
+</body>
+</html>
