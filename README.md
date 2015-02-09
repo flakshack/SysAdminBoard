@@ -3,6 +3,8 @@ SysAdminBoard
 
 SysAdminBoard is a collection of DIY panels and data generators for the [Panic StatusBoard iPad App](http://www.panic.com/statusboard/) designed to display data relevant to Sysadmins.  Code is written in Python, HTML and Javascript and served on a simple [CherryPy Webserver](http://cherrypy.org/) (included).
 
+(New) Originally this code was intended only for use on the iPad app, but I had some stability problems that forced me to restart the iPad at least once a day.  To work around this problem, I replaced our iPads with a couple ASUS Chromeboxes and modified the code to run as a simple web page. I've added new HTML pages to replicate the clock, twitter, weather and graph functionality of the iPad app.
+
 This project is not intended to be a ready-to-deploy solution.  However, if you are comfortable with Python, you should be able to get this working without much effort.
 
 Here are some location shots of our installation:
@@ -24,6 +26,9 @@ This code will talk to a VMware vSphere vCenter server using VMware APIs to get 
 ![SNMP Network Monitoring Gadget](readme-images/snmp.png)
 
 This code generates JSON data only that is consumed by the Statusboard iPad app's built in graph function.
+
+(New) I've written an HTML page that will also display graph data using [Chartjs](http://chartjs.org/) (see the VNX Storage Pool IOPS screenshot below).
+
 ###SNMP Temperature Gadget
 ![SNMP Temperature Gadget](readme-images/temp.png)
 
@@ -32,6 +37,10 @@ This code talks to a couple different APC devices to pull in temperature, humidi
 ![EMC VNX Monitoring Gadget](readme-images/vnx.png)
 
 This code talks to an EMC VNX Reporting and Monitoring web server to pull down performance data.  There is probably a better way to do this, but I was in a hurry.
+
+![EMC VNX Monitoring Gadget #2](readme-images/vnx2.png)
+
+(New) There's a new storage pool IOPS gadget that can either feed data to the iPad app or use my graph HTML (chart.js) to display.
 
 ###Exchange Monitoring
 ![Exchange Monitoring Gadget](readme-images/exch.png)
@@ -43,6 +52,17 @@ This code monitors a Microsoft Exchange server to display SMTP message totals fo
 
 This code monitors a Tintri hybrid storage device using REST API calls.
 
+###Weather
+
+![Weather Gadget](readme-images/weather.png)
+
+This is a simple javascript-only weather gadget that pulls data from [OpenWeatherMap.org](http://openweathermap.org).  If you use this gadget, please sign up for a free APPID on that site and edit the source file to include your code.
+
+###Clock
+
+![Clock Gadget](readme-images/clock.png)
+
+This is a great javascript-only clock from [YXKFW](http://www.yxkfw.com/?p=15718).
 
 
 ## Code Layout
@@ -108,6 +128,9 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
  iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
 ```
 
+## HTML-only version
+
+Check out the dashboard.html file as an example of running the site without an iPad.
 
 
 
@@ -118,6 +141,19 @@ Here's a quick list of improvements I'd like to make to the system when I have t
 
 
 ##Change Log
+2015-02-08
+* New HTML pages to graph data normally handled by Statusboard iPad app using Chartjs.
+* Updated HTML to use a shared CSS file.
+* Updated HTML to move to jquery 2.
+* New VNX Storage Pool IOPS data generator.
+* New HTML weather gadget.
+* New HTML clock gadget.
+* New HTML twitter gadget.
+* New Dashboard.html file that will load other pages in an iFrame.
+* Updated javascript error handling. Other minor javascript tweaks.
+
+
+
 2014-09-09
 * Credentials are now stored in a single file.
 * Webserver.py has been simplified to avoid repeated code.  
@@ -141,3 +177,8 @@ Here's a quick list of improvements I'd like to make to the system when I have t
 * [PySphere](https://code.google.com/p/pysphere/)
 * [CherryPy](http://www.cherrypy.org/)
 * [Flipcounter.js](http://cnanney.com/journal/code/apple-style-counter-revisited/)
+* [YXKFW Apple HTML 5 clock](http://www.yxkfw.com/?p=15718)
+* [OpenWeatherMap.org](http://openweathermap.org)
+* [ChartJS](http://chartjs.org/)
+
+
