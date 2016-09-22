@@ -1,17 +1,15 @@
 SysAdminBoard
 =======================
 
-SysAdminBoard is a collection of DIY panels and data generators for the [Panic StatusBoard iPad App](http://www.panic.com/statusboard/) designed to display data relevant to Sysadmins.  Code is written in Python, HTML and Javascript and served on a simple [CherryPy Webserver](http://cherrypy.org/) (included).
+SysAdminBoard is a simple dashboard system written in Python, HTML and Javascript and served on a simple [CherryPy Webserver](http://cherrypy.org/) (included).
 
-(New) Originally this code was intended only for use on the iPad app, but I had some stability problems that forced me to restart the iPad at least once a day.  To work around this problem, I replaced our iPads with a couple ASUS Chromeboxes and modified the code to run as a simple web page. I've added new HTML pages to replicate the clock, twitter, weather and graph functionality of the iPad app.  The code will continue to be compatible with the Panic Statusboard iPad app.
+It was originally written for the [Panic StatusBoard iPad App](http://www.panic.com/statusboard/), but I had some stability problems that forced me to restart the iPad at least once a day.  To work around this problem, I replaced our iPads with a couple ASUS Chromeboxes and modified the code to run as a simple web page. I've added new HTML pages to replicate the clock, twitter, weather and graph functionality of the iPad app.
 
 This project is not intended to be a ready-to-deploy solution.  However, if you are comfortable with Python, you should be able to get this working without much effort.
 
-Here are some location shots of our installation:
+Here is a photo our installation:
 
 ![Network Services Room](readme-images/location1.jpg)
-
-![Helpdesk Room](readme-images/location2.jpg)
 
 ##Features
 ###VMware vSphere ESX Host Monitoring
@@ -34,13 +32,10 @@ This code generates JSON data only that is consumed by the Statusboard iPad app'
 
 This code talks to a couple different APC devices to pull in temperature, humidity, voltage and runtime data.
 ###EMC VNX Monitoring
-![EMC VNX Monitoring Gadget](readme-images/vnx.png)
+![EMC VNX Monitoring Gadget](readme-images/vnx2.png)
 
-This code talks to an EMC VNX Reporting and Monitoring web server to pull down performance data.  There is probably a better way to do this, but I was in a hurry.
+This code talks to an EMC VNX Reporting and Monitoring web server to pull down performance data.
 
-![EMC VNX Monitoring Gadget #2](readme-images/vnx2.png)
-
-(New) There's a new storage pool IOPS gadget that can either feed data to the iPad app or use my graph HTML (chart.js) to display.
 
 ###Exchange Monitoring
 ![Exchange Monitoring Gadget](readme-images/exch.png)
@@ -51,6 +46,11 @@ This code monitors a Microsoft Exchange server to display SMTP message totals fo
 ![Tintri Monitoring Gadget](readme-images/tintri.png)
 
 This code monitors a Tintri hybrid storage device using REST API calls.
+
+###Rubrik Monitoring
+![Rubrik Monitoring Gadget](readme-images/rubrik.png)
+
+This code monitors a Rubrik backup system using REST API calls.
 
 ###Weather
 
@@ -70,7 +70,7 @@ Individual python files are designed to be run independently for testing.  You c
 
 You will need to edit the files to provide your server ip addresses or SNMP OIDs.  You should edit the credentials.py file to store usernames and passwords.  Although the python files are hidden behind the web server, the credentials are being stored in plain text, so be sure that you are using restricted accounts.  For example, a read-only VMware vSphere account is all we need.
 
-The static HTML pages are loaded by the Statusboard iPad App which then uses AJAX to retrieve the JSON data. 
+The static HTML pages are loaded by the Statusboard iPad App which then uses AJAX to retrieve the JSON data.
 
 The main function here is the webserver.py. This launches the CherryPy webserver and loads each data generator into a separate thread.  To enable/disable a module, find the MODULES section and call create a SysAdminBoardModule object, specifying the module filename (without the .py).  For example:  SysAdminBoardModule('vmware_host')  will load the vmware_host.py file, setup the webserver URLs and the process callback thread.
 
@@ -98,8 +98,8 @@ Install pysnmp
 ```
 yum groupinstall "Development Tools"
 yum install python-devel
-wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py 
-python ez_setup.py 
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+python ez_setup.py
 easy_install pysnmp
 ```
 
@@ -122,8 +122,8 @@ service sysadminboard restart
 
 Add these rules to your firewall to redirect from port 8080 to port 80:
 ```
- iptables -A INPUT -p tcp --dport 80 -j ACCEPT 
- iptables -A INPUT -p tcp --dport 8080 -j ACCEPT 
+ iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+ iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
 # Redirect port 80 to port 8080
  iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
 ```
@@ -135,12 +135,11 @@ Check out the dashboard.html file as an example of running the site without an i
 
 
 
-##To Do
-Here's a quick list of improvements I'd like to make to the system when I have time.
-* Replace static HTML code with Templating system (Mako, Genshi or something else).  *Currently HTML tables are manually edited to match the expected output*
 
+##Major Change Log
+2016-09-21
+* New Rubrik gadget
 
-##Change Log
 2015-02-08
 * New HTML pages to graph data normally handled by Statusboard iPad app using Chartjs.
 * Updated HTML to use a shared CSS file.
@@ -180,5 +179,3 @@ Here's a quick list of improvements I'd like to make to the system when I have t
 * [YXKFW Apple HTML 5 clock](http://www.yxkfw.com/?p=15718)
 * [OpenWeatherMap.org](http://openweathermap.org)
 * [ChartJS](http://chartjs.org/)
-
-
