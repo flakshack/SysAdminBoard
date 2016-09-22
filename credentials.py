@@ -31,6 +31,3 @@ TINTRI_PASSWORD = "somepassword"
 WORKDESK_USER = 'someuser'
 WORKDESK_PASSWORD = 'somepassword'
 
-# Rubrik
-RUBRIK_USER = 'someuser'
-RUBRIK_PASSWORD = 'somepassword'

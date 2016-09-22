@@ -18,7 +18,6 @@ import StringIO
 import time
 import json
 from datetime import datetime
-from collections import defaultdict
 
 
 
@@ -35,21 +34,56 @@ VNX_REPORTER_WEBSERVER = "http://vnx-reporter:58080/VNX-MR"
 # All>>Systems>>Summary>>Array Summary>><Array Name>>>Block, <Array ID>>>Array Name>>Storage Pool>>Summary>>Storage Pools Performance>>APM00125137788, VMWare_DB_Pool>>Storage Pool IOPS
 # Change the date range of the report to "realtime, last 15 minutes", then copy the URL for Export->CSV.
 
-# From All>>Systems>>Details>>Block Systems (All Reports)>>Performance>>TopN & Exceptions>>TopN IOPS>>Storage Pools / RAID Groups
 # =============Sample CSV File=================
-# "Array","Storage Pool / RAID Group","Total Throughput (IO/s)"
-# "VNXCS0","VMWare_DB_Pool","786.11370099149644374847412109375"
-# "VNXCS0","DB_Log_Pool","375.515779879875481128692626953125"
-# "VNXCS0","Exchange_Data_Pool","269.28121803700923919677734375"
-# "VNXCS0","RecoverPoint_JRNL_Pool","61.3779788948595523834228515625"
-# "VNXCS0","CIFS_Share_Pool","39.02574731595814228057861328125"
-# "VNXCS0","CIFS_Replica_Pool","11.292803363292478024959564208984375"
+#        #"All/Systems/Summary/Array Summary/VNXCS0/Block, APM00125137788/VNXCS0/Storage Pool/Summary/Storage Pools Performance/APM00125137788, VMWare_DB_Pool/Storage Pool IOPS"
+#
+#        #"Wednesday, December 24, 2014, from 8:59 AM to 9:14 AM, EST"
+#
+#
+#        "Timestamp","LOGICAL UNIT NUMBER 138, IOPS"
+#        "1419429450","209.02667045593262"
+#        "1419429750","208.39051842689514"
+#        "1419430050","260.0799992084503"
+#
+#        "Timestamp","LOGICAL UNIT NUMBER 136, IOPS"
+#        "1419429450","28.999999523162842"
+#        "1419429750","259.0604591369629"
+#        "1419430050","34.46666669845581"
+#
+#        "Timestamp","LOGICAL UNIT NUMBER 104, IOPS"
+#        "1419429450","50.75333395600319"
+#        "1419429750","48.511627078056335"
+#        "1419430050","48.17333263158798"
+#
+#        "Timestamp","LOGICAL UNIT NUMBER 105, IOPS"
+#        "1419429450","51.03999960422516"
+#        "1419429750","53.01723277568817"
+#        "1419430050","37.333332538604736"
+#
+#        "Timestamp","LOGICAL UNIT NUMBER 106, IOPS"
+#        "1419429450","40.34333336353302"
+#        "1419429750","59.022502422332764"
+#        "1419430050","65.84666639566422"
+#
+#        "Timestamp","Others"
+#        "1419429450","253.97666573524475"
+#        "1419429750","223.69741164613515"
+#        "1419430050","250.17666354496032"
 # =============Sample CSV File=================
 
-VNX_REPORT_URL = "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-t3a7d227d433f92f3-4a44114c-4786a14f-88274b27-92f494c-55ec0ee1-3c1260af&display=0&mode=srt&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"
 
+
+STORAGE_POOLS = (
+    {"name": "VMware", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-e568d0be-280cc045&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"},
+    {"name": "Exch", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-2b0c9361-a33158e8&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"},
+    {"name": "Logs", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-26d1978c-3393bb6b&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"},
+    {"name": "CIFS", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-35f3533c-1ad4611b&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"},
+    {"name": "CIFS-R", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-b4f98203-46b024e2&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"},
+    {"name": "RPA", "url": "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-1-c2b16891-3f6d1f89-f2d4031b-344209fa-2ed56689-12c23473-baad54bd-71f0f1ce-3210cece-e75b6a55&display=0&mode=stk&statistics=none&lower=0.0&upper=&type=3&period=0&durationType=l&duration=15m&itz=America%2FNew_York"}
+
+)
 MAX_DATAPOINTS = 30
-SAMPLE_INTERVAL = 120
+SAMPLE_INTERVAL = 60
 GRAPH_TITLE = "EMC VNX Storage Pool IOPS"
 # ===============================================================================
 
@@ -58,8 +92,23 @@ class MonitorJSON:
     """This is a simple class passed to Monitor threads so we can access the current JSON data in that thread"""
     def __init__(self):
         self.json = ""
-        self.datapoints = []
 
+
+class StoragePoolDataset:
+    all_pools = []    # Static array containing all storage pools
+
+    def __init__(self, name, url):
+        self.url = url
+        self.name = name
+        self.raw_data = []                       # Hold raw data
+        self.datapoints = []                     # Holds data in dictionary format for statusboard processing
+        self.__class__.all_pools.append(self)    # Add self to static array
+
+
+class PoolDatapoint:
+    def __init__(self, timestamp, value):
+        self.value = value
+        self.timestamp = timestamp
 
 
 def output_message(message, detail):
@@ -99,6 +148,11 @@ monkeypatch_mechanize()
 def generate_json(vnx_monitor):
     """This function will connect to the VNX web server, parse data and store the output in vnx_monitor.json"""
     try:
+        # Create a list of StoragePoolDatasets using the contants provided above
+        if len(StoragePoolDataset.all_pools) == 0:
+            for pool in STORAGE_POOLS:
+                StoragePoolDataset(pool["name"], pool["url"])
+
         # Create Mechanize browser
         browser = Browser()
 
@@ -118,41 +172,57 @@ def generate_json(vnx_monitor):
         #
         # Now that we are logged in, we can get the page we really want.
         #
-
-        reply = browser.open(VNX_REPORT_URL)
-        perf_data = reply.read()
-        read_csv = csv.reader(StringIO.StringIO(perf_data))
-
-        # The file lists several LUNs with a timestamp and IOPs count. Add up a total IOPS for the pool.
-        timestamp = datetime.now()
-        for row in read_csv:
-            # The CSV module will parse each line into an array with the columns
-            if len(row) > 1:  # Skip blank rows
-                if row[0] == "VNXCS0":        # Skip any row without the correct array
-                    pool = row[2]
-                    pool = pool.replace("_Pool","")     # Remove the word _POOL from pool names
-                    iops = int(float(row[11]))
-                    vnx_monitor.datapoints.append({"pool":pool, "iops":iops, "timestamp":timestamp})
-
-
-        # Each storage pool will be stored as dict with all the datapoints in this array
         statusbar_datasequences = []
+        # Get data for each storage pool
+        for pool in StoragePoolDataset.all_pools:
+            # Get the CSV file from the web server
+            reply = browser.open(pool.url)
+            perf_data = reply.read()
 
-        # Organize the datapoints by pool
-        pool_datapoints = defaultdict(list)
-        for datapoint in vnx_monitor.datapoints:
-            title = datapoint['timestamp'].strftime("%H:%M")
-            value = datapoint['iops']
-            pool_datapoints[(datapoint['pool'])].append({"title": title, "value":value})
-        # Format raw data as a dictionary for JSON consumption
-        for pool in pool_datapoints:
-            statusbar_datasequences.append({"title": pool, "datapoints": pool_datapoints[pool]})
+            # Use the CSV module to parse the data.
+            read_csv = csv.reader(StringIO.StringIO(perf_data))
 
-        # If we already have the max number of datapoints, delete the oldest item.
-        pool_count = len(pool_datapoints)   # we will delete one datapoint for each pool
-        if len(vnx_monitor.datapoints) >= (MAX_DATAPOINTS * pool_count):
-            for i in range(0,pool_count):
-                del (vnx_monitor.datapoints[0])
+            # The file lists several LUNs with a timestamp and IOPs count. Add up a total IOPS for the pool.
+            csv_datapoints = []
+            for row in read_csv:
+                # The CSV module will parse each line into an array
+                if len(row) > 1:                # Skip blank rows
+                    if row[0].isdigit():        # Skip any row where the first column isn't a number.
+                        timestamp = int(row[0])
+                        value = int(float(row[1]))
+                        found = False
+                        for csv_datapoint in csv_datapoints:
+                            if csv_datapoint.timestamp == timestamp:
+                                csv_datapoint.value += value
+                                found = True
+                                break
+                        if not found:
+                            csv_datapoints.append(PoolDatapoint(timestamp, value))
+
+            # Merge the data we just received with our saved data, skipping any duplicate timestamps
+            for csv_datapoint in csv_datapoints:
+                # Check if it already exists in our pool data
+                found = False
+                for data in pool.raw_data:
+                    if csv_datapoint.timestamp == data.timestamp:
+                        found = True
+                        break
+                if not found:
+                    pool.raw_data.append(csv_datapoint)
+
+
+            # If we already have the max number of datapoints, delete the oldest item.
+            if len(pool.raw_data) >= MAX_DATAPOINTS:
+                del(pool.raw_data[0])
+
+            # Format raw data as a dictionary for JSON consumption
+            pool.datapoints = []
+            for data in pool.raw_data:
+                x_axis_time = datetime.fromtimestamp(data.timestamp)
+                pool.datapoints.append({"title": x_axis_time.strftime("%I:%M"), "value": data.value})
+
+            # Generate the data sequence
+            statusbar_datasequences.append({"title": pool.name, "datapoints": pool.datapoints})
 
         # Generate JSON output and assign to snmp_monitor object (for return back to caller module)
         statusbar_graph = {
@@ -178,7 +248,3 @@ if __name__ == '__main__':
         generate_json(monitor)
         # Wait X seconds for the next iteration
         time.sleep(SAMPLE_INTERVAL)
-
-
-# Sample Output:
-# {"graph": {"datasequences": [{"datapoints": [{"value": 16, "title": "14:53"}, {"value": 16, "title": "14:54"}, {"value": 8, "title": "14:55"}, {"value": 7, "title": "14:56"}, {"value": 7, "title": "14:57"}, {"value": 7, "title": "14:58"}, {"value": 7, "title": "15:00"}, {"value": 5, "title": "15:01"}, {"value": 5, "title": "15:02"}, {"value": 5, "title": "15:03"}, {"value": 5, "title": "15:04"}, {"value": 16, "title": "15:05"}], "title": "CIFS_Replica_Pool"}, {"datapoints": [{"value": 487, "title": "14:54"}, {"value": 496, "title": "14:55"}, {"value": 418, "title": "14:56"}, {"value": 418, "title": "14:57"}, {"value": 418, "title": "14:58"}, {"value": 418, "title": "15:00"}, {"value": 329, "title": "15:01"}, {"value": 329, "title": "15:02"}, {"value": 329, "title": "15:03"}, {"value": 329, "title": "15:04"}, {"value": 462, "title": "15:05"}], "title": "DB_Log_Pool"}, {"datapoints": [{"value": 796, "title": "14:54"}, {"value": 805, "title": "14:55"}, {"value": 762, "title": "14:56"}, {"value": 762, "title": "14:57"}, {"value": 762, "title": "14:58"}, {"value": 762, "title": "15:00"}, {"value": 592, "title": "15:01"}, {"value": 592, "title": "15:02"}, {"value": 592, "title": "15:03"}, {"value": 592, "title": "15:04"}, {"value": 779, "title": "15:05"}], "title": "VMWare_DB_Pool"}, {"datapoints": [{"value": 300, "title": "14:54"}, {"value": 311, "title": "14:55"}, {"value": 254, "title": "14:56"}, {"value": 254, "title": "14:57"}, {"value": 254, "title": "14:58"}, {"value": 254, "title": "15:00"}, {"value": 209, "title": "15:01"}, {"value": 209, "title": "15:02"}, {"value": 209, "title": "15:03"}, {"value": 209, "title": "15:04"}, {"value": 267, "title": "15:05"}], "title": "Exchange_Data_Pool"}, {"datapoints": [{"value": 58, "title": "14:53"}, {"value": 58, "title": "14:54"}, {"value": 48, "title": "14:55"}, {"value": 55, "title": "14:56"}, {"value": 55, "title": "14:57"}, {"value": 55, "title": "14:58"}, {"value": 55, "title": "15:00"}, {"value": 46, "title": "15:01"}, {"value": 46, "title": "15:02"}, {"value": 46, "title": "15:03"}, {"value": 46, "title": "15:04"}, {"value": 82, "title": "15:05"}], "title": "CIFS_Share_Pool"}, {"datapoints": [{"value": 62, "title": "14:53"}, {"value": 62, "title": "14:54"}, {"value": 60, "title": "14:55"}, {"value": 61, "title": "14:56"}, {"value": 61, "title": "14:57"}, {"value": 61, "title": "14:58"}, {"value": 61, "title": "15:00"}, {"value": 56, "title": "15:01"}, {"value": 56, "title": "15:02"}, {"value": 56, "title": "15:03"}, {"value": 56, "title": "15:04"}, {"value": 61, "title": "15:05"}], "title": "RecoverPoint_JRNL_Pool"}], "refreshEveryNSeconds": 60, "type": "line", "title": "EMC VNX Storage Pool IOPS"}}
