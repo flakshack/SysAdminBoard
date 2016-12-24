@@ -49,7 +49,7 @@ class MonitorJSON:
 
 
 def output_message(message):
-    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
+    """This function will output an error message formatted in JSON to display on the dashboard"""
     output = json.dumps({"error": message}, indent=4)
     return output
 

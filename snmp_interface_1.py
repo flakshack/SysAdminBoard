@@ -1,27 +1,23 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
+"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
 
 # In this monitor, we want to aggregate TX + RX and redundant uplinks into a single value
 
 # How To Calculate Bandwidth Utilization Using SNMP
 # http://www.cisco.com/en/US/tech/tk648/tk362/technologies_tech_note09186a008009496e.shtml
 """
-from __future__ import division    # So division of integers will result in float
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 import time
 import json
+import logging.config
 from credentials import SNMP_COMMUNITY
 
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-# Simple HTTP Server for testing
-# python -m SimpleHTTPServer 9000
-
-
-#=================================SETTINGS======================================
+# =================================SETTINGS======================================
 MAX_DATAPOINTS = 30
 SAMPLE_INTERVAL = 60
-GRAPH_TITLE = "Bandwidth (Mbps)"
+GRAPH_TITLE = "Floor VLAN Bandwidth (Mbps)"
 
 # Standard SNMP OIDs
 # sysUpTime	    1.3.6.1.2.1.1.3.0    (this is hundreds of a second)
@@ -40,13 +36,13 @@ DEVICE_IP = "cisco-clt-core"
 DEVICE_SNMP = SNMP_COMMUNITY
 DEVICE_UPTIME_OID = "1.3.6.1.2.1.1.3.0"
 AGGREGATE_INTERFACES = (
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.1", "1.3.6.1.2.1.31.1.1.1.10.1", "1.3.6.1.2.1.31.1.1.1.6.62", "1.3.6.1.2.1.31.1.1.1.10.62"], "name": "16"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.2", "1.3.6.1.2.1.31.1.1.1.10.2", "1.3.6.1.2.1.31.1.1.1.6.63", "1.3.6.1.2.1.31.1.1.1.10.63"], "name": "17"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.3", "1.3.6.1.2.1.31.1.1.1.10.3", "1.3.6.1.2.1.31.1.1.1.6.64", "1.3.6.1.2.1.31.1.1.1.10.64"], "name": "18"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.4", "1.3.6.1.2.1.31.1.1.1.10.4", "1.3.6.1.2.1.31.1.1.1.6.65", "1.3.6.1.2.1.31.1.1.1.10.65"], "name": "19"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.5", "1.3.6.1.2.1.31.1.1.1.10.5", "1.3.6.1.2.1.31.1.1.1.6.66", "1.3.6.1.2.1.31.1.1.1.10.66"], "name": "20"}
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.875", "1.3.6.1.2.1.31.1.1.1.10.875"], "name": "16"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.879", "1.3.6.1.2.1.31.1.1.1.10.879"], "name": "17"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.883", "1.3.6.1.2.1.31.1.1.1.10.883"], "name": "18"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.887", "1.3.6.1.2.1.31.1.1.1.10.887"], "name": "19"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.891", "1.3.6.1.2.1.31.1.1.1.10.891"], "name": "20"}
 )
-#================================================================================
+# ================================================================================
 
 
 class MonitorJSON:
@@ -72,21 +68,18 @@ class SNMPDatapoint:
         self.timeticks = timeticks
 
 
-
-def get_snmp(device, community, snmp_oid1, snmp_oid2, snmp_oid3, snmp_oid4, snmp_uptime_oid):
+def get_snmp(device, community, snmp_oid1, snmp_oid2, snmp_uptime_oid):
     """Returns the value of the specified snmp OID.
      Also gets the uptime (TimeTicks) so we know exactly when the sample was taken."""
 
     # Perform a synchronous SNMP GET
     cmd_gen = cmdgen.CommandGenerator()
     error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
-        cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((device, 161)), snmp_oid1, snmp_oid2, snmp_oid3, snmp_oid4, snmp_uptime_oid
+        cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((device, 161)), snmp_oid1, snmp_oid2, snmp_uptime_oid
     )
 
     snmp_value1 = None
     snmp_value2 = None
-    snmp_value3 = None
-    snmp_value4 = None
     snmp_error = None
     snmp_uptime_value = None
 
@@ -99,11 +92,9 @@ def get_snmp(device, community, snmp_oid1, snmp_oid2, snmp_oid3, snmp_oid4, snmp
             # varBinds are returned as SNMP objects, so convert to integers
             snmp_value1 = int(var_binds[0][1])
             snmp_value2 = int(var_binds[1][1])
-            snmp_value3 = int(var_binds[2][1])
-            snmp_value4 = int(var_binds[3][1])
-            snmp_uptime_value = int(var_binds[4][1])
+            snmp_uptime_value = int(var_binds[2][1])
 
-    return snmp_value1, snmp_value2, snmp_value3, snmp_value4, snmp_uptime_value, snmp_error
+    return snmp_value1, snmp_value2, snmp_uptime_value, snmp_error
 
 
 def calculate_bps(current_sample_octets, current_sample_time, historical_sample_octets, historical_sample_time):
@@ -128,7 +119,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
+    """This function will output an error message formatted in JSON to display on the dashboard"""
     output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     return json.dumps(output)
 
@@ -136,6 +127,7 @@ def output_message(message, detail):
 def generate_json(snmp_monitor):
     """This function will take the device config and raw data (if any) from the snmp_monitor and output JSON data
     formatted for the StatusBar iPad App"""
+    logger = logging.getLogger("snmp_interface_1")
 
     time_x_axis = time.strftime("%H:%M")         # Use the same time value for all samples per iteration
     datasequences = []
@@ -151,24 +143,23 @@ def generate_json(snmp_monitor):
 
         # Get the SNMP data
         try:
-            snmp_value1, snmp_value2, snmp_value3, snmp_value4, snmp_uptime_value, \
+            snmp_value1, snmp_value2, snmp_uptime_value, \
                 snmp_error = get_snmp(
                     DEVICE_IP,
                     DEVICE_SNMP,
                     aggr_interface.interface_oids[0],
                     aggr_interface.interface_oids[1],
-                    aggr_interface.interface_oids[2],
-                    aggr_interface.interface_oids[3],
                     DEVICE_UPTIME_OID
                 )
         except Exception as error:
             if not snmp_error:
-                snmp_error = error.message
+                snmp_error = str(error)
             if snmp_error:
+                logger.warning("Error retrieving SNMP data", snmp_error)
                 break
         else:
-            # Total the value of our 4 interfaces
-            snmp_value = snmp_value1 + snmp_value2 + snmp_value3 + snmp_value4
+            # Total the value of our 2 interfaces
+            snmp_value = snmp_value1 + snmp_value2
 
             # Add the raw SNMP data to a list
             if len(aggr_interface.snmp_data) == 0:                # first time through, initialize the list
@@ -199,7 +190,6 @@ def generate_json(snmp_monitor):
         # Generate the data sequence
         datasequences.append({"title": aggr_interface.name, "datapoints": aggr_interface.datapoints})
 
-
     # If we ran into an SNMP error, go ahead and write out the JSON file with the error
     if snmp_error:
         snmp_monitor.json = output_message("Error retrieving SNMP data", snmp_error)
@@ -221,15 +211,36 @@ def generate_json(snmp_monitor):
         }
         snmp_monitor.json = json.dumps({"graph": graph})
 
-    if __debug__:
-        print snmp_monitor.json
+    logger.debug(snmp_monitor.json)
 
 
-
-# If you run this module by itself, it will instantiate the MonitorJSON class and start an infinite loop printing data.
+# ======================================================
+# __main__
+#
+# If you run this module by itself, it will instantiate
+# the MonitorJSON class and start an infinite loop
+# printing data.
+# ======================================================
+#
 if __name__ == '__main__':
+
+    # When run by itself, we need to create the logger object (which is normally created in webserver.py)
+    try:
+        f = open("log_settings.json", 'rt')
+        log_config = json.load(f)
+        f.close()
+        logging.config.dictConfig(log_config)
+    except FileNotFoundError as e:
+        print("Log configuration file not found: " + str(e))
+        logging.basicConfig(level=logging.DEBUG)        # fallback to basic settings
+    except json.decoder.JSONDecodeError as e:
+        print("Error parsing logger config file: " + str(e))
+        raise
+
     monitor = MonitorJSON()
     while True:
+        main_logger = logging.getLogger(__name__)
         generate_json(monitor)
         # Wait X seconds for the next iteration
+        main_logger.debug("Waiting for " + str(SAMPLE_INTERVAL) + " seconds")
         time.sleep(SAMPLE_INTERVAL)

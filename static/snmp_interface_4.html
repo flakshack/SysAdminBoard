@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Cache-control" content="no-cache">
+        <meta application-name="Bandwidth Monitoring" data-allows-resizing="YES">
+
+<head>
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
+    <script type="text/javascript" src="/static/js/Chart.min.js" ></script>
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />
+    <style type="text/css">
+
+        table {
+            border-collapse: collapse;
+            table-layout:fixed;
+            font-family: 'Roadgeek2014SeriesC', sans-serif;
+            border-spacing: 0px;
+            margin: 0px 2px 0px 2px;
+            width: 100%;
+        }
+        td {
+            padding: 1px 1px 1px 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+            text-align: center;
+        }
+
+        .header {
+            float: left;
+            text-transform: none;
+        }
+
+        #legend {
+            float: right;
+            padding-top: 4px;
+        }
+        #myGraph {
+            padding-left: 2px;
+        }
+
+    </style>
+
+
+    <script type="text/javascript">
+    // Settings that will be replaced once the data is read from the server.
+    var title = "";
+    var ajax_refresh = 60000;
+    var myLineChart;
+    var MAX_DATAPOINTS = 30;
+
+    var GRAPH_COLORS = [
+        "rgb(255,198,0)",   //Yellow
+        "rgb(0,108,230)",   //Blue
+        "rgb(0,186,0)",     //Green
+        "rgb(155,0,194)",   //Purple
+        "rgb(0,159,153)",   //OtherBlue
+        "rgb(252,88,181)",  //Pink
+        "rgb(255,48,0)",    //Red
+        "rgb(252,107,0)",   //Orange
+        "rgb(174,183,188)", //Light Gray
+        "rgb(100,112,188)", //Dark Gray
+    ]
+
+
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {                     // Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                json_data = JSON.parse(xmlHTTP.responseText);
+
+                if ("error" in json_data.graph) {       // If there was an error with the data, show it (and hide the charts)
+                    $('#errorText').html(json_data.graph.error.message);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#main_output').css("display", "block");
+
+                    // Settings data
+                    title = json_data.graph.title;
+                    $('#title').html(title);
+                    ajax_refresh = json_data.graph.refreshEveryNSeconds;
+
+                    if (myLineChart === undefined) {        // Build the initial chart
+
+                        var labels = [];    // X-axis
+                        var datasets = [];
+
+                        // Loop through the JSON data and pull out the X axis labels
+                        // (We only need the first set)
+                        var datapoints = json_data.graph.datasequences[0].datapoints;
+                        for (var i = 0; i < datapoints.length; i++) {
+                            // Too many X-axis lables can be cluttering, so skip every second label
+                            if (labels[labels.length - 1] != '') {
+                                labels.push('');
+                            } else {
+                                labels.push(datapoints[i].title);
+                            }
+                        };
+
+
+                        // Loop through the JSON data and pull out the data values
+                        var color_index = 0;
+                        var datasequences = json_data.graph.datasequences;
+                        for (var i = 0; i < datasequences.length; i++) {
+                            var values = [];
+                            for (var j = 0; j < datasequences[i].datapoints.length; j++) {
+                                values.push(datasequences[i].datapoints[j].value);
+                            };
+
+                            var dataset = {
+                                label: datasequences[i].title,
+                                strokeColor: GRAPH_COLORS[color_index],
+                                data: values
+                            }
+                            datasets.push(dataset);
+
+                            // Assign a different color to each line.
+                            color_index++;
+                            if (color_index > GRAPH_COLORS.length-1) {
+                                color_index = 0;
+                            }
+                        };
+
+
+
+
+
+
+
+
+
+                        // Create data and options variables to pass to Chart.js constructor
+                        var data = {
+                            labels: labels,
+                            datasets: datasets
+                        };
+                        // Chart options
+                        var options = {
+                            bezierCurveTension : 0.05,
+                            datasetFill : false,
+                            pointDot : false,
+                            showTooltips: false,
+                            scaleFontFamily: 'Roadgeek2014SeriesC',
+                            scaleFontColor: 'white',
+                            scaleLineColor: '#333333',
+                            //scaleGridLineColor : "#333333",
+                            datasetStrokeWidth : 3,
+                            legendTemplate : "<% for (var i=0; i<datasets.length; i++){%>"
+                                + "<span style=\"color:<%=datasets[i].strokeColor%>\">"
+                                + "<%if(datasets[i].label){%>"
+                                +   "<%=datasets[i].label%>"
+                                + "<%}%>"
+                                + "</span> "
+                                + "<%}%>"
+                        }
+
+                        // Create the graph object
+                        var ctx = $("#myGraph").get(0).getContext("2d");
+                        myLineChart = new Chart(ctx).Line(data, options);
+                        // Create the legend
+                        var legend = myLineChart.generateLegend();
+                        $("#legend").html(legend);
+
+
+
+                    } else {    // Chart has already been built, so just update the data
+
+
+                        // Too many X-axis lables can be cluttering, so skip every other label
+                        var print_label = true;
+                        if (myLineChart.datasets[0].points.length > 1) {
+                            for (var i = 1; i <= 1; i++) {  // Search through the last 1 items for a label.
+                                var j = myLineChart.datasets[0].points.length - i;
+                                if (myLineChart.datasets[0].points[j].label != '') {
+                                    print_label = false;
+                                }
+                            }
+
+                        }
+
+                        // Add the data for the last item in our JSON dataset
+                        var values = [];
+                        var label = json_data.graph.datasequences[0].datapoints[json_data.graph.datasequences[0].datapoints.length -1].title;
+                        var datasequences = json_data.graph.datasequences;
+
+                        for (var i = 0; i < datasequences.length; i++) {
+                            values.push(datasequences[i].datapoints[datasequences[i].datapoints.length -1].value);
+                        };
+
+                        if (print_label) {
+                            myLineChart.addData(values,label);
+                        } else {
+                            myLineChart.addData(values,"");
+                        }
+
+                        // Remove the first chart item if more than max_datapoints displayed
+                        if (myLineChart.datasets[0].points.length >= MAX_DATAPOINTS) {
+                            myLineChart.removeData()
+                        }
+
+                    }
+
+
+
+                }
+
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {  // There was an error doing the AJAX callback
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/snmp_interface_4/ajax', true);
+        xmlHTTP.send(null);
+    }
+
+
+    function init() {
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1) {
+            document.getElementById('main_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 5 seconds (should match the data interval of the source data)
+        var int=self.setInterval(function(){doAJAX()}, ajax_refresh);
+
+
+
+    }
+
+    </script>
+</head>
+
+<body onload="init()"><div id="errorText"></div>
+<div id="main_output"><table id="main_table">
+<tr>
+    <tr><td><div class="header" id="title">Loading Graph...</div><div id="legend"></td></tr>
+    <tr>
+        <td><canvas id="myGraph" width="350" height="220"></canvas></td>        
+    </tr>
+</tr>
+</table></div>
+
+
+
+</body></html>

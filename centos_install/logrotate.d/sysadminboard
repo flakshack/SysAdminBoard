@@ -1,0 +1,10 @@
+# For CentOS systems, place this file in /etc/logrotate.d
+
+/var/log/sysadminboard {
+    missingok
+    compress
+    delaycompress
+    daily
+    rotate 5
+    copytruncate
+}

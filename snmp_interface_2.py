@@ -1,27 +1,24 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
+"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
 
 
 
 # How To Calculate Bandwidth Utilization Using SNMP
 # http://www.cisco.com/en/US/tech/tk648/tk362/technologies_tech_note09186a008009496e.shtml
 """
-from __future__ import division    # So division of integers will result in float
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 import time
 import json
+import logging.config
 from credentials import SNMP_COMMUNITY
 
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-# Simple HTTP Server for testing
-# python -m SimpleHTTPServer 9000
 
-
-#=================================SETTINGS======================================
+# =================================SETTINGS======================================
 MAX_DATAPOINTS = 30
 SAMPLE_INTERVAL = 60
-GRAPH_TITLE = "Bandwidth (Mbps)"
+GRAPH_TITLE = "Internet Banwidth (Mbps)"
 
 # Standard SNMP OIDs
 # sysUpTime	    1.3.6.1.2.1.1.3.0    (this is hundreds of a second)
@@ -37,16 +34,12 @@ GRAPH_TITLE = "Bandwidth (Mbps)"
 # uptime_oid:  This is the SNMP OID for the device's uptime (so we know what the time was when we measured the counter)
 # name:  This is the name of the device as it will appear on the graph
 DEVICES = (
-    {"ip": "cisco-rh-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH RX"},
-    {"ip": "cisco-rh-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "RH TX"},
-    {"ip": "cisco-tri-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI RX"},
-    {"ip": "cisco-tri-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "TRI TX"},
-    {"ip": "cisco-clt-asa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET RX"},
-    {"ip": "cisco-clt-asa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.2", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "INET TX"},
-    {"ip": "cisco-clt-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT TX"},
-    {"ip": "cisco-clt-wan", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.3", "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "CLT RX"}
+    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.500010000",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "Internet RX"},
+    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.500010000",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "Internet TX"},
 )
-#================================================================================
+# ================================================================================
 
 
 class MonitorJSON:
@@ -73,7 +66,6 @@ class SNMPDatapoint:
     def __init__(self, value, timeticks):
         self.value = value
         self.timeticks = timeticks
-
 
 
 def get_snmp(device, community, snmp_oid, snmp_uptime_oid):
@@ -125,7 +117,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
+    """This function will output an error message formatted in JSON to display on the dashboard"""
     statusbar_output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     output = json.dumps(statusbar_output)
     return output
@@ -134,13 +126,13 @@ def output_message(message, detail):
 def generate_json(snmp_monitor):
     """This function will take the device config and raw data (if any) from the snmp_monitor and output JSON data
     formatted for the StatusBar iPad App"""
+    logger = logging.getLogger("snmp_interface_2")
 
     time_x_axis = time.strftime("%H:%M")         # Use the same time value for all samples per iteration
     statusbar_datasequences = []
     snmp_error = None
 
-    if __debug__:
-        print "SNMP generate_json started: " + time_x_axis
+    logger.debug("SNMP generate_json started: " + time_x_axis)
 
     # Create a list of InterfaceDevices using the contants provided above
     if len(InterfaceDevice.all_devices) == 0:
@@ -149,15 +141,17 @@ def generate_json(snmp_monitor):
 
     # Loop through each device, update the SNMP data
     for device in InterfaceDevice.all_devices:
-
+        logger.debug(device.ip + " " + device.name + " " + device.oid)
         # Get the SNMP data
         try:
-            snmp_value, snmp_uptime_value, snmp_error = get_snmp(device.ip, device.community, device.oid, device.uptime_oid)
+            snmp_value, snmp_uptime_value, snmp_error = get_snmp(device.ip, device.community,
+                                                                 device.oid, device.uptime_oid)
         except Exception as error:
             if not snmp_error:
-                snmp_error = error.message
+                snmp_error = str(error)
 
         if snmp_error:
+            logger.warning(snmp_error)
             break
         else:
             # Add the raw SNMP data to a list
@@ -189,7 +183,6 @@ def generate_json(snmp_monitor):
         # Generate the data sequence
         statusbar_datasequences.append({"title": device.name, "datapoints": device.datapoints})
 
-
     # If this is the first run through, show Initializing on iPad
     if snmp_error:
         # If we ran into an SNMP error, go ahead and write out the JSON file with the error
@@ -211,15 +204,36 @@ def generate_json(snmp_monitor):
         statusbar_type = {"graph": statusbar_graph}
         snmp_monitor.json = json.dumps(statusbar_type)
 
-    if __debug__:
-        print snmp_monitor.json
+        logger.debug(snmp_monitor.json)
 
 
-
-# If you run this module by itself, it will instantiate the MonitorJSON class and start an infinite loop printing data.
+# ======================================================
+# __main__
+#
+# If you run this module by itself, it will instantiate
+# the MonitorJSON class and start an infinite loop
+# printing data.
+# ======================================================
+#
 if __name__ == '__main__':
+
+    # When run by itself, we need to create the logger object (which is normally created in webserver.py)
+    try:
+        f = open("log_settings.json", 'rt')
+        log_config = json.load(f)
+        f.close()
+        logging.config.dictConfig(log_config)
+    except FileNotFoundError as e:
+        print("Log configuration file not found: " + str(e))
+        logging.basicConfig(level=logging.DEBUG)        # fallback to basic settings
+    except json.decoder.JSONDecodeError as e:
+        print("Error parsing logger config file: " + str(e))
+        raise
+
     monitor = MonitorJSON()
     while True:
+        main_logger = logging.getLogger(__name__)
         generate_json(monitor)
         # Wait X seconds for the next iteration
+        main_logger.debug("Waiting for " + str(SAMPLE_INTERVAL) + " seconds")
         time.sleep(SAMPLE_INTERVAL)

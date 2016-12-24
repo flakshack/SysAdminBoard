@@ -6,16 +6,16 @@
 
 <head>
     <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
-    <script type="text/javascript" src="/static/js/Chart.min.js" ></script>    
+    <script type="text/javascript" src="/static/js/Chart.min.js" ></script>
 
-    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />   
-    <style type="text/css"> 
-   
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />
+    <style type="text/css">
+
         table {
             border-collapse: collapse;
             table-layout:fixed;
-            font-family: 'Roadgeek2014SeriesC', sans-serif;         
-            border-spacing: 0px; 
+            font-family: 'Roadgeek2014SeriesC', sans-serif;
+            border-spacing: 0px;
             margin: 0px 2px 0px 2px;
             width: 100%;
         }
@@ -24,12 +24,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: clip;
-            text-align: center;            
+            text-align: center;
         }
 
         .header {
             float: left;
-            text-transform: none;                       
+            text-transform: none;
         }
 
         #legend {
@@ -38,27 +38,27 @@
         }
         #myGraph {
             padding-left: 2px;
-        }        
+        }
 
     </style>
 
 
     <script type="text/javascript">
     // Settings that will be replaced once the data is read from the server.
-    var title = "";       
-    var ajax_refresh = 60000; 
+    var title = "";
+    var ajax_refresh = 60000;
     var myLineChart;
-    var MAX_DATAPOINTS = 30;    
+    var MAX_DATAPOINTS = 30;
 
     var GRAPH_COLORS = [
         "rgb(255,198,0)",   //Yellow
-        "rgb(0,108,230)",   //Blue  
-        "rgb(0,186,0)",     //Green      
+        "rgb(0,108,230)",   //Blue
+        "rgb(0,186,0)",     //Green
         "rgb(155,0,194)",   //Purple
         "rgb(0,159,153)",   //OtherBlue
         "rgb(252,88,181)",  //Pink
         "rgb(255,48,0)",    //Red
-        "rgb(252,107,0)",   //Orange        
+        "rgb(252,107,0)",   //Orange
         "rgb(174,183,188)", //Light Gray
         "rgb(100,112,188)", //Dark Gray
     ]
@@ -71,12 +71,12 @@
         xmlHTTP.onreadystatechange=function() {                     // Executed when data is received
             if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
                 json_data = JSON.parse(xmlHTTP.responseText);
-                
+
                 if ("error" in json_data.graph) {       // If there was an error with the data, show it (and hide the charts)
                     $('#errorText').html(json_data.graph.error.message);
                     $('#errorText').css("display", "inline");
                     $('#main_output').css("display", "none");
-                } else {                        
+                } else {
                     $('#errorText').css("display", "none");
                     $('#main_output').css("display", "block");
 
@@ -86,28 +86,28 @@
                     ajax_refresh = json_data.graph.refreshEveryNSeconds;
 
                     if (myLineChart === undefined) {        // Build the initial chart
-                        
+
                         var labels = [];    // X-axis
                         var datasets = [];
-                        
+
                         // Loop through the JSON data and pull out the X axis labels
                         // (We only need the first set)
                         var datapoints = json_data.graph.datasequences[0].datapoints;
                         for (var i = 0; i < datapoints.length; i++) {
                             // Too many X-axis lables can be cluttering, so skip every second label
                             if (labels[labels.length - 1] != '') {
-                                labels.push(''); 
+                                labels.push('');
                             } else {
-                                labels.push(datapoints[i].title);    
+                                labels.push(datapoints[i].title);
                             }
                         };
-                                    
+
 
                         // Loop through the JSON data and pull out the data values
                         var color_index = 0;
                         var datasequences = json_data.graph.datasequences;
                         for (var i = 0; i < datasequences.length; i++) {
-                            var values = [];                            
+                            var values = [];
                             for (var j = 0; j < datasequences[i].datapoints.length; j++) {
                                 values.push(datasequences[i].datapoints[j].value);
                             };
@@ -130,9 +130,9 @@
 
 
 
-                        
 
-                        
+
+
 
                         // Create data and options variables to pass to Chart.js constructor
                         var data = {
@@ -154,22 +154,22 @@
                                 + "<span style=\"color:<%=datasets[i].strokeColor%>\">"
                                 + "<%if(datasets[i].label){%>"
                                 +   "<%=datasets[i].label%>"
-                                + "<%}%>" 
+                                + "<%}%>"
                                 + "</span> "
                                 + "<%}%>"
                         }
 
-                        // Create the graph object    
-                        var ctx = $("#myGraph").get(0).getContext("2d");    
+                        // Create the graph object
+                        var ctx = $("#myGraph").get(0).getContext("2d");
                         myLineChart = new Chart(ctx).Line(data, options);
-                        // Create the legend  
+                        // Create the legend
                         var legend = myLineChart.generateLegend();
                         $("#legend").html(legend);
 
 
-                        
+
                     } else {    // Chart has already been built, so just update the data
-                        
+
 
                         // Too many X-axis lables can be cluttering, so skip every other label
                         var print_label = true;
@@ -190,14 +190,14 @@
 
                         for (var i = 0; i < datasequences.length; i++) {
                             values.push(datasequences[i].datapoints[datasequences[i].datapoints.length -1].value);
-                        };                                               
+                        };
 
                         if (print_label) {
-                            myLineChart.addData(values,label);    
+                            myLineChart.addData(values,label);
                         } else {
                             myLineChart.addData(values,"");
                         }
-                        
+
                         // Remove the first chart item if more than max_datapoints displayed
                         if (myLineChart.datasets[0].points.length >= MAX_DATAPOINTS) {
                             myLineChart.removeData()
@@ -208,15 +208,15 @@
 
 
                 }
-            
+
             } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200) {  // There was an error doing the AJAX callback
                 $('#errorText').html('Unable to update data');
                 $('#errorText').css("display", "inline");
-                $('#main_output').css("display", "none");              
+                $('#main_output').css("display", "none");
             }
         }
         // This GET URL must match the domain in the web browser of this page or it will not work
-        // so we use the page's location object to open the page from the same server        
+        // so we use the page's location object to open the page from the same server
         xmlHTTP.open("GET", location.protocol + '//' + location.host + '/snmp_interface_2/ajax', true);
         xmlHTTP.send(null);
     }
@@ -225,27 +225,27 @@
     function init() {
         // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
         if (document.location.href.indexOf('desktop') > -1) {
-            document.getElementById('main_table').style.backgroundColor = 'black';            
+            document.getElementById('main_table').style.backgroundColor = 'black';
         }
 
         doAJAX()
         // Call the refresh function every 5 seconds (should match the data interval of the source data)
         var int=self.setInterval(function(){doAJAX()}, ajax_refresh);
 
-     
+
 
     }
 
     </script>
 </head>
-    
+
 <body onload="init()"><div id="errorText"></div>
 <div id="main_output"><table id="main_table">
 <tr>
     <tr><td><div class="header" id="title">Loading Graph...</div><div id="legend"></td></tr>
     <tr>
-        <td><canvas id="myGraph" width="410" height="220"></canvas></td>        
-    </tr>       
+        <td><canvas id="myGraph" width="350" height="220"></canvas></td>
+    </tr>
 </tr>
 </table></div>
 

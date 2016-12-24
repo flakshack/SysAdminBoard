@@ -50,7 +50,7 @@ VNX_REPORT_URL = "http://vnx-reporter:58080/VNX-MR/report.csv?report&select=0-t3
 
 MAX_DATAPOINTS = 30
 SAMPLE_INTERVAL = 120
-GRAPH_TITLE = "EMC VNX Storage Pool IOPS"
+GRAPH_TITLE = "EMC Pool IOPS"
 # ===============================================================================
 
 
@@ -63,7 +63,7 @@ class MonitorJSON:
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
+    """This function will output an error message formatted in JSON to display on the SysAdminBoard app"""
     statusbar_output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     output = json.dumps(statusbar_output)
     return output

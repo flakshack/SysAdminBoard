@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="VMware VM Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
+
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />
+	<style type="text/css">
+
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2014SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 4px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+
+		.sparkline {
+			padding: 0 2px 0 2px;
+            text-align: center;
+		}
+        .vm_name {
+            text-align: left;
+            margin: 2px 0px 0px 2px;
+            width: 100px;
+            display:inline-block;
+        }
+
+        .iops {
+            display: none;
+        }
+        .iops:after {
+            content: ' iops';
+            margin-left: 0.1em;
+            text-transform: none;
+            color: rgb(100,112,118);
+        }
+        .throughput {
+            display: none;
+        }
+        .throughput:after {
+            content: ' MBps';
+            margin-left: 0.1em;
+            text-transform: none;
+            color: rgb(100,112,118);
+        }
+        .latency {
+            display: none;
+        }
+        .latency:after {
+            content: ' ms';
+            margin-left: 0.1em;
+            text-transform: none;
+            color: rgb(100,112,118);
+        }
+
+	</style>
+
+
+    <script type="text/javascript">
+
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:
+                // {"vms": [{"iops": [1, 0, 27, 763, 168, 588], "name": "VMA-NAME", "throughput": [0.05, 0.01, 2.07, 208.16, 26.91, 117.8], "latency": [1.0, 0.0, 1.1, 6.4, 2.6, 1.8]},
+                // error json format:
+                // { "vms": [{"error": "details"}]}
+
+                vm_array = ajaxdata['vms'];
+                if ("error" in vm_array[0]) {
+                    $('#errorText').html(vm_array[0]["error"]);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#main_output').css("display", "block")
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<vm_array.length; i++) {
+                        $('#vm' + i + '_name').html(vm_array[i]["name"]);
+
+
+                        // Update sparkline to reflect latest CPU data
+
+                        $('#vm' + i + '_spark').sparkline(vm_array[i]["iops"], {
+                            type: 'line',
+                            height: '20px',
+                            width: '100px',
+                            lineColor: '#aeb7bc',
+                            lineWidth: 1.5,
+                            fillColor: 'transparent',
+                            minSpotColor: 'transparent',
+                            maxSpotColor: 'transparent',
+                            spotRadius: 2
+                            }
+                        );
+
+                        // Update the current numeric value field
+                        var current_iops = vm_array[i]["iops"].pop();
+                        $('#vm' + i + '_iops').html(current_iops);
+                        $('#vm' + i + '_iops').css("display", "inline");
+
+                        var current_througput = vm_array[i]["throughput"].pop();
+                        $('#vm' + i + '_throughput').html(current_througput);
+                        $('#vm' + i + '_throughput').css("display", "inline");
+
+                        var current_latency = vm_array[i]["latency"].pop();
+                        $('#vm' + i + '_latency').html(current_latency);
+                        $('#vm' + i + '_latency').css("display", "inline");
+
+                    }
+                }
+
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200)  {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/nutanix_vm_svr/ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('vm_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+
+    }
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<div id="main_output"><table id="vm_table">
+<tbody>
+<tr><td colspan="5" class="header">SVR Top Storage IO</td></tr>
+<tr>
+    <td id="vm0_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm0_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm0_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm0_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm0_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm1_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm1_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm1_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm1_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm1_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm2_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm2_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm2_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm2_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm2_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm3_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm3_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm3_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm3_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm3_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm4_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm4_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm4_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm4_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm4_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm5_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm5_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm5_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm5_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm5_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm6_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm6_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm6_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm6_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm6_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm7_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm7_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm7_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm7_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm7_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm8_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm8_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm8_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm8_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm8_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm9_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm9_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm9_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm9_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm9_latency">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm10_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm10_spark" class="sparkline"></span></td>
+    <td><span class="iops" id="vm10_iops">&nbsp;</span></td>
+    <td><span class="throughput" id="vm10_throughput">&nbsp;</span></td>
+	<td><span class="latency" id="vm10_latency">&nbsp;</span></td>
+</tr>
+
+</tbody></table></div>
+</body></html>

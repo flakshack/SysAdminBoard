@@ -6,10 +6,10 @@
 
     <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
-    
-    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />       
-	<style type="text/css">	
-		
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />
+	<style type="text/css">
+
 		table {
 		    border-collapse: collapse;
 		    font-family: 'Roadgeek2014SeriesD', sans-serif;
@@ -25,15 +25,15 @@
 		    text-overflow: ellipsis;
 		    text-align: left;
 		}
-        
+
         .status-gray {
             background: url(/static/images/0unknown.png) no-repeat;
             background-size: 16px;
             width: 20px;
-        }		
+        }
 		.status-green {
 			background: url(/static/images/1normal.png) no-repeat;
-			background-size: 16px;            
+			background-size: 16px;
 			width: 20px;
 		}
 		.status-yellow {
@@ -47,14 +47,14 @@
 			width: 20px;
 		}
 		.sparkline {
-			padding: 0 2px 0 2px;	
-            text-align: center;					
+			padding: 0 2px 0 2px;
+            text-align: center;
 		}
         .vm_name {
-            text-align: left; 
-            margin-top: 2px;            
+            text-align: left;
+            margin-top: 2px;
             width: 100px;
-            display:inline-block;   
+            display:inline-block;
         }
 
         .value {
@@ -63,24 +63,24 @@
         .value:after {
             content: ' mhz';
             margin-left: 0.1em;
-            text-transform: none; 
+            text-transform: none;
             color: rgb(100,112,118);
-        } 
-               
+        }
+
 
 
 	</style>
 
 
     <script type="text/javascript">
-    
+
     function doAJAX() {
         var xmlHTTP = new XMLHttpRequest();
 
         xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
             if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
                 ajaxdata = JSON.parse(xmlHTTP.responseText);
-                // incoming json format:  
+                // incoming json format:
                 // { "vms": [{"status": 1, "host_cpu_mhz": 1999, "cpu_count": 4, "name": "MyServerName1", "cpu": [1539,1234,2221,1211]}, ...   ]}
                 // error json format:
                 // { "vms": [{"error": "details"}]}
@@ -92,7 +92,7 @@
                     $('#main_output').css("display", "none");
                 } else {
                     $('#errorText').css("display", "none");
-                    $('#main_output').css("display", "block");                   
+                    $('#main_output').css("display", "block");
                     // Loop through the results and update the HTML with the new values
                     for (var i=0; i<vm_array.length; i++) {
                         $('#vm' + i + '_name').html(vm_array[i]["name"]);
@@ -132,11 +132,11 @@
                         $('#vm' + i + '_value').html(current_cpu);
                         $('#vm' + i + '_value').css("display", "inline");
 
-                        // Update the current percent                        
+                        // Update the current percent
                         var cpu_percent = (current_cpu / (vm_array[i]["host_cpu_mhz"] * vm_array[i]["cpu_count"]))
                         var cpu_percent = Math.round(cpu_percent * 100);
                         $('#vm' + i + '_percent').html(cpu_percent + '%');
-                        
+
                     }
                 }
 
@@ -147,7 +147,7 @@
             }
         }
         // This GET URL must match the domain in the web browser of this page or it will not work
-        // so we use the page's location object to open the page from the same server        
+        // so we use the page's location object to open the page from the same server
         xmlHTTP.open("GET", location.protocol + '//' + location.host + '/vmware_view_vm/ajax', true);
         xmlHTTP.send(null);
     }
@@ -161,8 +161,8 @@
         doAJAX()
         // Call the refresh function every 60 seconds
         var int=self.setInterval(function(){doAJAX()},60000);
-                        
-    }    
+
+    }
     </script>
 
 </head>
@@ -171,168 +171,167 @@
 <div id="errorText"></div>
 <div id="main_output"><table id="vm_table">
 <tbody>
-<tr><td colspan="5" class="header">VMware TOP VMs</td></tr>
+<tr><td colspan="5" class="header">VDI TOP CPU</td></tr>
 <tr>
     <td id="vm0_status"></td>
     <td id="vm0_name" class="vm_name">&nbsp;</td>
     <td><span id="vm0_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm0_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm0_percent">&nbsp;</span></td>
     <td><span class="value" id="vm0_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm1_status"></td>
     <td id="vm1_name" class="vm_name">&nbsp;</td>
     <td><span id="vm1_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm1_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm1_percent">&nbsp;</span></td>
     <td><span class="value" id="vm1_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm2_status"></td>
     <td id="vm2_name" class="vm_name">&nbsp;</td>
     <td><span id="vm2_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm2_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm2_percent">&nbsp;</span></td>
     <td><span class="value" id="vm2_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm3_status"></td>
     <td id="vm3_name" class="vm_name">&nbsp;</td>
     <td><span id="vm3_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm3_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm3_percent">&nbsp;</span></td>
     <td><span class="value" id="vm3_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm4_status"></td>
     <td id="vm4_name" class="vm_name">&nbsp;</td>
     <td><span id="vm4_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm4_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm4_percent">&nbsp;</span></td>
     <td><span class="value" id="vm4_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm5_status"></td>
     <td id="vm5_name" class="vm_name">&nbsp;</td>
     <td><span id="vm5_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm5_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm5_percent">&nbsp;</span></td>
     <td><span class="value" id="vm5_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm6_status"></td>
     <td id="vm6_name" class="vm_name">&nbsp;</td>
     <td><span id="vm6_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm6_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm6_percent">&nbsp;</span></td>
     <td><span class="value" id="vm6_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm7_status"></td>
     <td id="vm7_name" class="vm_name">&nbsp;</td>
     <td><span id="vm7_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm7_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm7_percent">&nbsp;</span></td>
     <td><span class="value" id="vm7_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm8_status"></td>
     <td id="vm8_name" class="vm_name">&nbsp;</td>
     <td><span id="vm8_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm8_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm8_percent">&nbsp;</span></td>
     <td><span class="value" id="vm8_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm9_status"></td>
     <td id="vm9_name" class="vm_name">&nbsp;</td>
     <td><span id="vm9_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm9_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm9_percent">&nbsp;</span></td>
     <td><span class="value" id="vm9_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm10_status"></td>
     <td id="vm10_name" class="vm_name">&nbsp;</td>
     <td><span id="vm10_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm10_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm10_percent">&nbsp;</span></td>
     <td><span class="value" id="vm10_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm11_status"></td>
     <td id="vm11_name" class="vm_name">&nbsp;</td>
     <td><span id="vm11_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm11_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm11_percent">&nbsp;</span></td>
     <td><span class="value" id="vm11_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm12_status"></td>
     <td id="vm12_name" class="vm_name">&nbsp;</td>
     <td><span id="vm12_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm12_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm12_percent">&nbsp;</span></td>
     <td><span class="value" id="vm12_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm13_status"></td>
     <td id="vm13_name" class="vm_name">&nbsp;</td>
     <td><span id="vm13_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm13_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm13_percent">&nbsp;</span></td>
     <td><span class="value" id="vm13_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm14_status"></td>
     <td id="vm14_name" class="vm_name">&nbsp;</td>
     <td><span id="vm14_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm14_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm14_percent">&nbsp;</span></td>
     <td><span class="value" id="vm14_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm15_status"></td>
     <td id="vm15_name" class="vm_name">&nbsp;</td>
     <td><span id="vm15_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm15_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm15_percent">&nbsp;</span></td>
     <td><span class="value" id="vm15_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm16_status"></td>
     <td id="vm16_name" class="vm_name">&nbsp;</td>
     <td><span id="vm16_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm16_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm16_percent">&nbsp;</span></td>
     <td><span class="value" id="vm16_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm17_status"></td>
     <td id="vm17_name" class="vm_name">&nbsp;</td>
     <td><span id="vm17_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm17_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm17_percent">&nbsp;</span></td>
     <td><span class="value" id="vm17_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm18_status"></td>
     <td id="vm18_name" class="vm_name">&nbsp;</td>
     <td><span id="vm18_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm18_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm18_percent">&nbsp;</span></td>
     <td><span class="value" id="vm18_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm19_status"></td>
     <td id="vm19_name" class="vm_name">&nbsp;</td>
     <td><span id="vm19_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm19_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm19_percent">&nbsp;</span></td>
     <td><span class="value" id="vm19_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm20_status"></td>
     <td id="vm20_name" class="vm_name">&nbsp;</td>
     <td><span id="vm20_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm20_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm20_percent">&nbsp;</span></td>
     <td><span class="value" id="vm20_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm21_status"></td>
     <td id="vm21_name" class="vm_name">&nbsp;</td>
     <td><span id="vm21_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm21_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm21_percent">&nbsp;</span></td>
     <td><span class="value" id="vm21_value">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm22_status"></td>
     <td id="vm22_name" class="vm_name">&nbsp;</td>
     <td><span id="vm22_spark" class="sparkline"></span></td>
-    <td><span class="percent" id="vm22_percent">&nbsp;</span></td>    
+    <td><span class="percent" id="vm22_percent">&nbsp;</span></td>
     <td><span class="value" id="vm22_value">&nbsp;</span></td>
 </tr>
 </tbody></table></div>
 </body></html>
-

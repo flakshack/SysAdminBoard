@@ -1,8 +1,8 @@
 #!/bin/bash
 # chkconfig: 2345 90 90
-# description: sysadminboard cherrypy web server
+# description: sysadminboard monitoring services
 ### BEGIN INIT INFO
-# Provides: sysadminboard CherryPy WebServer
+# Provides: SysAdminBoard Monitoring Services
 # Required-Start: network
 # Required-Stop: network
 # Default-Start: 2 3 4 5
@@ -10,11 +10,13 @@
 # Description: Start the program
 ### END INIT INFO
 
+# Place this file in /etc/init.d, chmod +x, and chkconfig sysadminboard on
+
 ### Fill in these bits:
-START_CMD="su -s /bin/bash -c 'python -O /opt/sysadminboard/webserver.py' sbpython"
-NAME="SysAdminBoardPython"
+START_CMD="su -s /bin/bash -c 'cd /opt/sysadminboard && source /opt/sysadminboard-ve/bin/activate && python -O /opt/sysadminboard/webserver.py' sbpython"
+NAME="sysadminboard"
 PGREP_STRING="/opt/sysadminboard/webserver.py"
-PID_FILE="/var/run/sysadminboard/sysadminboard.pid"
+PID_FILE="/var/run/sysadminboard.pid"
 USER="sbpython"
 
 ### No further muckin' about needed!

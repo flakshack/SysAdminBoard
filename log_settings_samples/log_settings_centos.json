@@ -1,0 +1,37 @@
+{
+    "_comment1": "This config file is used to control where output from the python logging is sent.",
+    "_comment2": "In CentOS, log entries will appear in /var/log/messages",
+    "_comment3": "Change the level under syslog to DEBUG to see lots of log info",
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s: %(name)s: %(levelname)s: %(message)s"
+        },
+        "centos_syslog": {
+            "format": "sysadminboard[%(process)d]: %(module)s: %(levelname)s %(message)s"
+        }
+
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "stream": "ext://sys.stdout"
+        },
+
+        "syslog": {
+            "class": "logging.handlers.SysLogHandler",
+            "address": "/dev/log",
+            "level": "INFO",
+            "formatter": "centos_syslog"
+        }
+    },
+
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console", "syslog"]
+    }
+}

@@ -8,14 +8,10 @@ Please be sure that you are using restricted accounts (preferably with read-only
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 
-# EMC VNX Reporter
-VNX_REPORTER_USERNAME = "someuser"
-VNX_REPORTER_PASSWORD = "somepassword"
-
 
 # VMware
-VMWARE_VCENTER_USERNAME = "somedomain\\someuser"
-VMWARE_VCENTER_PASSWORD = "somepassword"
+VMWARE_VCENTER_USERNAME = "domain\\username"
+VMWARE_VCENTER_PASSWORD = "yourpassword"
 
 
 # SNMP Community String (Read-Only)
@@ -23,14 +19,18 @@ SNMP_COMMUNITY = "public"
 
 
 # Tintri
-TINTRI_USER = "someuser"
-TINTRI_PASSWORD = "somepassword"
+TINTRI_USER = "youraccount"
+TINTRI_PASSWORD = "yourpassword"
 
 
 # Workdesk MySQL
-WORKDESK_USER = 'someuser'
-WORKDESK_PASSWORD = 'somepassword'
+WORKDESK_USER = 'youraccount'
+WORKDESK_PASSWORD = 'yourpassword'
 
 # Rubrik
-RUBRIK_USER = 'someuser'
-RUBRIK_PASSWORD = 'somepassword'
+RUBRIK_USER = 'youraccount'
+RUBRIK_PASSWORD = 'yourpassword'
+
+# Nutanix
+NUTANIX_USER = 'youraccount'
+NUTANIX_PASSWORD = 'yourpassword'

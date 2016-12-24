@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Cache-control" content="no-cache">
+<title>SysAdminBoard</title>
+<style>
+
+  body {
+    background-color: black;
+    margin:0;
+    padding: 0;
+  }
+  iframe {
+    border:none;
+  }
+  /* Panel sizes are in 64 bit increments -4 bits for padding  (each side: 1 margin, 1 line)*/
+  .panel4x4 {
+    width:252px;
+    height:246px;
+  }
+  .panel5x4 {
+    width:316px;
+    height:246px;
+  }
+  .panel6x4 {
+    width:380px;
+    height:246px;
+  }
+  .panel7x4 {
+    width:444px;
+    height:246px;
+  }
+  .panel8x4 {
+    width: 508px;
+    height:246px;
+  }
+  .panel6x3 {
+    width:380px;
+    height:192px;
+  }
+  .panel2x4 {
+    width:123px;
+    height:246px;
+  }
+  div {
+    border-radius: 6px;
+    border-width: 1px;
+    border-style:solid;
+    border-color: #333333 #333333 #222222 #333333;
+    float:left;
+    margin: 1px 1px 1px 1px;
+    background: linear-gradient(#222222, black);
+  }
+
+
+</style>
+</head>
+<body>
+<!-- At 1920x1080, there are 29x16 panel blocks (64 pixels) -->
+<!-- Row 1 -->
+<div><iframe class="panel4x4" src="clock/index2.html"></iframe></div>
+<div><iframe class="panel6x4" src="nutanix_svr.html"></iframe></div>
+<div><iframe class="panel6x4" src="vmware_vm.html"></iframe></div>
+<div><iframe class="panel7x4" src="nutanix_vm_svr.html"></iframe></div>
+<div><iframe class="panel6x4" src="snmp_interface_1.html"><!-- floor --></iframe></div>
+
+<!-- Row 2 -->
+<div><iframe class="panel4x4" src="rubrik.html"></iframe></div>
+<div><iframe class="panel6x4" src="nutanix_vdi.html"></iframe></div>
+<div><iframe class="panel6x4" src="vmware_view_vm.html"></iframe></div>
+<div><iframe class="panel7x4" src="nutanix_vm_vdi.html"></iframe></div>
+<div><iframe class="panel6x4" src="nutanix_vm_cpu_ready.html"></iframe></div>
+
+<!-- Row 3 -->
+<div><iframe class="panel6x4" src="snmp_interface_2.html"><!-- internet --></iframe></div>
+<div><iframe class="panel6x4" src="snmp_interface_4.html"><!-- replication wan --></iframe></div>
+<div><iframe class="panel6x4" src="snmp_interface_3.html"><!-- wan --></iframe></div>
+<div><iframe class="panel4x4" src="tintri.html"></iframe></div>
+<div><iframe class="panel7x4" src="vmware_host.html"></iframe></div>
+<!-- Row 4 -->
+<div><iframe class="panel6x4" src="snmp_interface_5.html"><!-- pri --></iframe></div>
+<div><iframe class="panel8x4" src="snmp_interface_6.html"><!-- vlan --></iframe></div>
+<div><iframe class="panel4x4" src="msexchange.html"></iframe></div>
+<div><iframe class="panel4x4" src="snmp_environmental_1.html"></iframe></div>
+<div><iframe class="panel6x4" style="height:300px" src="twitter.html"></iframe></div>
+</body>
+</html>

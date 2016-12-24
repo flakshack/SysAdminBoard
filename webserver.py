@@ -8,14 +8,16 @@ themselves first.
 
 # Be sure to use pip to install CherryPy and routes:
 # pip install CherryPy
-# pip install importlib
 # pip install routes
 
 import cherrypy
 from cherrypy.lib.static import serve_file
-from cherrypy.process.plugins import Daemonizer
+from cherrypy.process.plugins import Daemonizer         # will become active when Daemonizer is uncommented below
 import os
-import importlib
+import json
+import logging.config
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
 class SysAdminBoardModule:
@@ -25,17 +27,26 @@ class SysAdminBoardModule:
     all_modules = []      # Static array containing all modules
 
     def __init__(self, module_name):
+        logger = logging.getLogger("SysAdminBoardModule")
         # Dynamically import the python module file
         self.module_name = module_name
-        self.module = importlib.import_module(module_name, package=None)
+        logger.info("Importing module: " + module_name)
+        self.module = __import__(module_name)
         self.frequency = self.module.SAMPLE_INTERVAL
         self.data = self.module.MonitorJSON()            # Custom class to store the JSON data
 
         # Add a thread in CherryPy to execute our callback funciton
+        logger.debug("Creating callback function for:  " + module_name)
         cherrypy.process.plugins.Monitor(cherrypy.engine, self.callback_function, frequency=self.frequency).subscribe()
 
         # Rather than wait for the first CherryPy timer to trigger, we'll gather the first set of data now
-        self.callback_function()
+        logger.debug("First run of: " + module_name)
+        try:
+            self.callback_function()
+        except Exception as error:
+            # No matter what exception we hit here, we don't want this to stop other modules from running.
+            logger.error("Error setting callback function " + str(error))
+            pass
 
         self.__class__.all_modules.append(self)     # Add self to static array
 
@@ -51,10 +62,9 @@ class SysAdminBoardModule:
     # Define a web URL to return the ajax json data
     @cherrypy.expose
     def ajax(self, **params):
-        #cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"     # Bypass Javascript security for testing only
+        # cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"  # Bypass Javascript security for testing only
         cherrypy.response.headers['Content-Type'] = 'application/json'
-        return self.data.json
-
+        return self.data.json.encode('utf8')            # In Python3 data has to be utf8 encoded
 
 
 class MyWebServer(object):
@@ -62,9 +72,10 @@ class MyWebServer(object):
     # The following HTML will be displayed if someone browses to this webserver directly.
     @cherrypy.expose
     def index(self, **params):
-        html = """<html><head><title>SysAdminBoard Gadget Server</title></head><body>
-            <p>This web server provides data to the <a href="http://panic.com/statusboard/">Panic StatusBoard</a> iPad app.</p>
-            <p>Here is a list of available Gadgets and data sources:</p>"""
+        html = """<html><head><title>SysAdminBoard</title></head><body>
+            <p>See: <a href="https://github.com/flakshack/SysAdminBoard">https://github.com/flakshack/SysAdminBoard</a>
+            </p>
+            <p>Here is a list of active modules and data sources:</p>"""
 
         for sb_module in SysAdminBoardModule.all_modules:
             html += '<a href="/' + sb_module.module_name + '?desktop">' + sb_module.module_name + '</a><br/>'
@@ -72,27 +83,67 @@ class MyWebServer(object):
 
         return html
 
+# =================MAIN==============
 
-#=====================================================================================================
-#                                         MODULES
-#=====================================================================================================
+# Setup logging to capture errors
+# When run by itself, we need to create the logger object (which is normally created in webserver.py)
+try:
+    f = open("log_settings.json", 'rt')
+    log_config = json.load(f)
+    f.close()
+    logging.config.dictConfig(log_config)
+except FileNotFoundError as e:
+    print("Log configuration file not found: " + str(e))
+    logging.basicConfig(level=logging.DEBUG)  # fallback to basic settings
+except json.decoder.JSONDecodeError as e:
+    print("Error parsing logger config file: " + str(e))
+    raise
+
+logger = logging.getLogger("SysAdminBoard Main")
+
+logger.warn("Disabling SSL certificate verification log messages")
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+
+# =====================================================================================================
+#
+#
+#                                          MODULES
+#
+#
+#  ====================================================================================================
 # Specify the modules you want to execute.  (put a # comment in front of modules to disable them).
+# SysAdminBoardModule('sample')
+
 SysAdminBoardModule('sample')
 # SysAdminBoardModule('msexchange')
 # SysAdminBoardModule('snmp_interface_1')
 # SysAdminBoardModule('snmp_interface_2')
+# SysAdminBoardModule('snmp_interface_3')
+# SysAdminBoardModule('snmp_interface_4')
+# SysAdminBoardModule('snmp_interface_5')
+# SysAdminBoardModule('snmp_interface_6')
 # SysAdminBoardModule('snmp_environmental_1')
 # SysAdminBoardModule('tintri')
+# SysAdminBoardModule('rubrik')
 # SysAdminBoardModule('vmware_host')
 # SysAdminBoardModule('vmware_view_host')
 # SysAdminBoardModule('vmware_view_vm')
 # SysAdminBoardModule('vmware_vm')
 # SysAdminBoardModule('helpdesk_byuser')
 # SysAdminBoardModule('helpdesk_bycategory')
-# SysAdminBoardModule('vnx_reporter')
-#=====================================================================================================
+# SysAdminBoardModule('nutanix_vdi')
+# SysAdminBoardModule('nutanix_svr')
+# SysAdminBoardModule('nutanix_vm_vdi')
+# SysAdminBoardModule('nutanix_vm_svr')
+# SysAdminBoardModule('nutanix_vm_cpu_ready')
+# SysAdminBoardModule('vmware_vm_nutanix_cvm_vdi')
+# SysAdminBoardModule('vmware_vm_nutanix_cvm_svr')
+
+
+# =====================================================================================================
 #
-#=====================================================================================================
+# =====================================================================================================
 
 root = MyWebServer()
 
@@ -101,7 +152,9 @@ mapper = cherrypy.dispatch.RoutesDispatcher()  # Used to manually map URLs to fu
 # Loop through all of the modules we've enabled and establish a CherryPy URL using the RoutesDispatcher.
 # The URLs are based on the module name.  For example, if the module name is vmware_host, then the URLs will be:
 # http://server/vmware_host and http://server/vmware_host/ajax
+
 for sysadminboard_module in SysAdminBoardModule.all_modules:
+    logger.debug("Mapping module: " + sysadminboard_module.module_name + " to webserver routes / & /ajax")
     # The root URL:  http://server/
     mapper.connect("index", "/", controller=root, action='index')
     mapper.connect(sysadminboard_module.module_name, "/" + sysadminboard_module.module_name,
@@ -111,7 +164,7 @@ for sysadminboard_module in SysAdminBoardModule.all_modules:
 
 # Here we define a location for non-python files
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(CURRENT_DIR, u"static")
+STATIC_DIR = os.path.join(CURRENT_DIR, "static")
 CONFIG = {
     '/': {
         'request.dispatch': mapper,                             # use a dispatcher to assign URLs
@@ -122,12 +175,11 @@ CONFIG = {
     },
 }
 
-#=================Disable this line when debugging==============
+# =================Disable this line when debugging==============
 Daemonizer(cherrypy.engine).subscribe()                         # When we start, do it as a daemon process
-#===============================================================
-
+# ===============================================================
+logger.info("Starting up SysAdminBoard web server...")
+cherrypy.log.access_log.propagate = False                        # Disable access logging
 cherrypy.config.update({'server.socket_host': '0.0.0.0'})       # Listen on all local IPs (on port 8080)
 cherrypy.tree.mount(root, '/', config=CONFIG)                   # Mount the app on the root
 cherrypy.engine.start()                                         # Start the web server
-
-

@@ -1,57 +1,52 @@
 #!/usr/bin/env python
 """helpdesk_bycategory - Exports JSON files with data from Helpdesk
 
-Requires mysql connector in python:  pip install mysql-connector-python
+Requires mysql connector in python:  pip install mysql-connector
 
 """
-from __future__ import division    # So division of integers will result in float
+from credentials import WORKDESK_USER
+from credentials import WORKDESK_PASSWORD
+import json
+import datetime
+import time
+import logging.config
+import mysql.connector
 
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
-from credentials import WORKDESK_USER
-from credentials import WORKDESK_PASSWORD
-
-
-#=================================SETTINGS======================================
+# =================================SETTINGS======================================
 SAMPLE_INTERVAL = 120
 MAX_RESULTS = 10              #
 mysql_config = {
-    'host': 'workdesk.yourcompany.domain',
+    'host': 'workdesk',
     'database': 'workdesk',
     'user': WORKDESK_USER,
     'password': WORKDESK_PASSWORD
 }
-#===============================================================================
-
-
-import json
-import datetime
-import time
-import mysql.connector
-from mysql.connector import errorcode
+# ===============================================================================
 
 # Current MYSQL doesn't support groupby in a subquery, so we have to break into 2 SQL statements
 
 # SQL to grab top classes and count of tickets
 
-#SELECT class, count(class)
-#FROM calls
-#WHERE category IN ("Helpdesk", "Application Support", "Network Services")
-#AND track >= UNIX_TIMESTAMP('2014-05-8 00:00:00')
-#GROUP BY class
-#ORDER BY count(class) DESC
-#LIMIT 10
+# SELECT class, count(class)
+# FROM calls
+# WHERE category IN ("Helpdesk", "Application Support", "Network Services")
+# AND track >= UNIX_TIMESTAMP('2014-05-8 00:00:00')
+# GROUP BY class
+# ORDER BY count(class) DESC
+# LIMIT 10
 
-# SQL to grab count of ticket responses for specified classes
+#  SQL to grab count of ticket responses for specified classes
 
-#SELECT c.class, count(c.class)
-#FROM calls c JOIN notes n ON c.id = n.call_id
-#WHERE c.category IN ("Helpdesk", "Application Support", "Network Services")
-#AND c.track >= UNIX_TIMESTAMP('2014-05-8 00:00:00')
-#AND c.class IN ("VIEW")
-#GROUP BY c.class
-#ORDER BY count(c.class) DESC
-#LIMIT 10
+# SELECT c.class, count(c.class)
+# FROM calls c JOIN notes n ON c.id = n.call_id
+# WHERE c.category IN ("Helpdesk", "Application Support", "Network Services")
+# AND c.track >= UNIX_TIMESTAMP('2014-05-8 00:00:00')
+# AND c.class IN ("VIEW")
+# GROUP BY c.class
+# ORDER BY count(c.class) DESC
+# LIMIT 10
 
 
 class MonitorJSON:
@@ -63,7 +58,9 @@ class MonitorJSON:
 
 
 def generate_json(hd_monitor):
-    global total_tickets, cursor, conn
+
+    logger = logging.getLogger("helpdesk_bycategory")
+    total_tickets = cursor = conn = None
     fromdate = datetime.date.today() + datetime.timedelta(days=-7)
 
     category_data = []
@@ -81,6 +78,7 @@ def generate_json(hd_monitor):
             "ORDER BY count(class) DESC "
             "LIMIT %s "
         )
+        logger.debug("Query: " + query)
         cursor = conn.cursor()
         cursor.execute(query, (fromdate.isoformat(), MAX_RESULTS))
         for (hdclass, count) in cursor:
@@ -98,6 +96,7 @@ def generate_json(hd_monitor):
             "GROUP BY c.class "
             "ORDER BY count(c.class) DESC "
         )
+        logger.debug("Query: " + query)
         query_parameters = [fromdate.isoformat()]
         for (item) in classes:
             query_parameters.append(item)
@@ -116,30 +115,53 @@ def generate_json(hd_monitor):
             "AND status = 'OPEN' "
             "AND track >= UNIX_TIMESTAMP(%s) "
         )
+        logger.debug("Query: " + query)
         cursor.execute(query, [fromdate.isoformat()])
         for (count) in cursor:
             total_tickets = count
 
-
-    except mysql.connector.Error as err:
-        print err
-        hd_monitor.json = json.dumps({"categories": [{"error": err.msg}]})
+    except mysql.connector.Error as error:
+        logger.error("MySQL Error: " + str(error))
+        hd_monitor.json = json.dumps({"categories": [{"error": str(error)}]})
     else:
         hd_monitor.json = json.dumps({"categories": category_data, "total": total_tickets})
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+    logger.debug(hd_monitor.json)
 
 
-    if __debug__:
-        print hd_monitor.json
-
-
-# If you run this module by itself, it will instantiate the MonitorJSON class and start an infinite loop printing data.
+# ======================================================
+# __main__
+#
+# If you run this module by itself, it will instantiate
+# the MonitorJSON class and start an infinite loop
+# printing data.
+# ======================================================
+#
 if __name__ == '__main__':
+
+    # When run by itself, we need to create the logger object (which is normally created in webserver.py)
+    try:
+        f = open("log_settings.json", 'rt')
+        log_config = json.load(f)
+        f.close()
+        logging.config.dictConfig(log_config)
+    except FileNotFoundError as e:
+        print("Log configuration file not found: " + str(e))
+        logging.basicConfig(level=logging.DEBUG)        # fallback to basic settings
+    except json.decoder.JSONDecodeError as e:
+        print("Error parsing logger config file: " + str(e))
+        raise
+
     monitor = MonitorJSON()
     while True:
+        main_logger = logging.getLogger(__name__)
         generate_json(monitor)
         # Wait X seconds for the next iteration
+        main_logger.debug("Waiting for " + str(SAMPLE_INTERVAL) + " seconds")
         time.sleep(SAMPLE_INTERVAL)
