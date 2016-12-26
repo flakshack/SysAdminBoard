@@ -247,7 +247,7 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 * [Easy Pie Chart](http://rendro.github.io/easy-pie-chart/)
 * [jQuery Sparklines](http://omnipotent.net/jquery.sparkline/#s-about)
 * [PySNMP](http://pysnmp.sourceforge.net)
-* [PySphere](https://code.google.com/p/pysphere/)
+* [PyVmomi](https://github.com/vmware/pyvmomi)
 * [CherryPy](http://www.cherrypy.org/)
 * [Flipcounter.js](http://cnanney.com/journal/code/apple-style-counter-revisited/)
 * [YXKFW Apple HTML 5 clock](http://www.yxkfw.com/?p=15718)
