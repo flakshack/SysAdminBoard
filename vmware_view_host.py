@@ -29,7 +29,7 @@ VCENTER_SERVERS = [
 ]
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30
-MAX_HOST_RESULTS = 6
+MAX_HOST_RESULTS = 8
 # ===============================================================================
 
 
