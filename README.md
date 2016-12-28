@@ -3,7 +3,7 @@ SysAdminBoard
 
 SysAdminBoard is a simple dashboard system written in Python, HTML and Javascript and served on a simple [CherryPy Webserver](http://cherrypy.org/) (included).  It was originally written to reformat snmp data for the [Panic Statusboard iPad App](http://www.panic.com/Statusboard/), but has since become a fully stand-alone project that can grab data from a variety of sources and render charts and graphs in a web browser.
 
-Here is a older photo our installation.  We use some small ASUS chromeboxes along with the [Chrome Kiosk extension](https://chrome.google.com/webstore/detail/kiosk/afhcomalholahplbjhnmahkoekoijban?hl=en) to display our dashboards.
+Here is an older photo our installation.  We use some small ASUS chromeboxes along with the [Chrome Kiosk extension](https://chrome.google.com/webstore/detail/kiosk/afhcomalholahplbjhnmahkoekoijban?hl=en) to display our dashboards.
 
 ![Network Services Room](readme-images/location1.jpg)
 
