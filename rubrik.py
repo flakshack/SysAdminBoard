@@ -1,7 +1,13 @@
 #!/usr/bin/env python
-"""rubrik - Uses Rubrik REST API to get summary of performance stats.
+"""
+
+rubrik - Uses Rubrik REST API to get summary of performance stats.
 
 API Explorer:  https://rubrik/docs/v1
+Internal API Explorer:  https://rubrik/docs/internal/playground
+
+NOTE:  These REST API calls are now considered INTERNAL, so if history is any guide, you can 
+expect them to break each time you upgrade. :-)
 
 """
 import json
@@ -51,25 +57,23 @@ class MonitorJSON:
         self.session = None
         self.data = RubrikData()
         self.token = None
+        self.detail_report_id = None
 
 
 def get_rubrik_token(rubrik_monitor):
-    """This function will create a request session and get a login token from the Rubrik"""
-    body = {
-        "username": RUBRIK_USER,
-        "password": RUBRIK_PASSWORD
-    }
-    headers = {'content-type': 'application/json'}
+    """This function will create a request session and get a login session token from the Rubrik
+       According to the docs the session token is valid for 3 hours after last use."""
 
     logger = logging.getLogger(__name__)
 
     # Create Session object to persist JSESSIONID cookie (so the next requests to Rubrik will work)
     rubrik_monitor.session = requests.Session()
+    rubrik_monitor.session.headers.update({'content-type': 'application/json'})
+    rubrik_monitor.session.auth = (RUBRIK_USER, RUBRIK_PASSWORD)
 
     try:
         # For all our requests, use the verify=False to ignore certificate errors
-        r = rubrik_monitor.session.post(RUBRIK_URL + "/api/v1/login",
-                                        data=json.dumps(body), verify=False, headers=headers)
+        r = rubrik_monitor.session.post(RUBRIK_URL + "/api/v1/session", verify=False)
     except (requests.exceptions.Timeout,
             requests.exceptions.ConnectionError,
             requests.exceptions.HTTPError) as e:
@@ -77,10 +81,16 @@ def get_rubrik_token(rubrik_monitor):
         return None
 
     result = json.loads(r.text)
+    #
     # When successful, login call returns
-    #  {'token': '8de9d44f-0000-0000-0000-05f66ec839f3', 'userId': 'a4c20000-0000-0000-0000-fe300000b23a'}
+    # {
+    #     "id": "00000000-0000-0000-0000-000000000000",
+    #     "userId": "00000000-0000-0000-0000-000000000000",
+    #     "token": "00000000-0000-0000-0000-000000000000"
+    # }
     # Otherwise it returns
-    # {'message': 'Incorrect Username/Password', 'cause': None, 'errorType': 'user_error'}
+    # {"errorType":"user_error","message":"Incorrect Username/Password","cause":null}
+    #
     try:
         return result["token"]
     except KeyError:
@@ -93,9 +103,7 @@ def generate_json(rubrik_monitor):
 
     logger = logging.getLogger("rubrik")
 
-    headers = {'content-type': 'application/json, charset=utf-8'}
-
-    # The token stores the REST API credentials and is used for each call to the server.
+    # The token stores a session credential and is used for each call to the server.
     token = rubrik_monitor.token
     if token is None:
         token = rubrik_monitor.token = get_rubrik_token(rubrik_monitor)
@@ -103,64 +111,82 @@ def generate_json(rubrik_monitor):
             rubrik_monitor.json = json.dumps({"error": "Error getting login token from Rubrik"}, indent=4)
             return
 
+    # Add the token to the authorization header.
+    headers = {
+                'content-type': 'application/json, charset=utf-8',
+                'Authorization': 'Bearer ' + rubrik_monitor.token
+               }
+
     try:
         # Summary Report
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/report/backup_jobs/summary?report_type=daily",
-            auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        # The report structure has changed.  First we must get the ID of the report we need
+        detail_report_id = rubrik_monitor.detail_report_id
+        if detail_report_id is None:
+            endpoint = "/api/internal/report?report_type=Canned&search_text=Protection Tasks Details"
+            r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
+            if r.status_code != 200:
+                raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
+            detail_report_id = rubrik_monitor.detail_report_id = json.loads(r.text)["data"][0]["id"]
+
+        # Now we call the report
+        endpoint = "/api/internal/report/" + detail_report_id + "/chart?timezone_offset=0&chart_id=chart0"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/report/backup_jobs/summary?report_type=daily: " + r.text)
-        rubrik_monitor.data.success_count = json.loads(r.text)["successCount"]
-        rubrik_monitor.data.failure_count = json.loads(r.text)["failureCount"]
-        rubrik_monitor.data.running_count = json.loads(r.text)["runningCount"]
+            raise RubrikNotConnectedException("Error getting " + endpoint + r.text)
+        chart_data = json.loads(r.text)[0]["chartData"]
+        for column in chart_data:
+            if column["label"] == "Succeeded":
+                rubrik_monitor.data.success_count = int(column["columnData"][0]["value"])
+            if column["label"] == "Failed":
+                rubrik_monitor.data.failure_count = int(column["columnData"][0]["value"])
+            if column["label"] == "Running":
+                rubrik_monitor.data.running_count = int(column["columnData"][0]["value"])
 
         # Storage stats
         # Note that "used" here includes system space.  We're more interested in snapshot space
         # so we'll get a used value in the next query.
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/system_storage", auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/stats/system_storage"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/system_storage: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         # Grab the data and convert to gigabytes (rounding up)
         rubrik_monitor.data.total = int(json.loads(r.text)["total"] / (1000 * 1000 * 1000))
         rubrik_monitor.data.available = int(json.loads(r.text)["available"] / (1000 * 1000 * 1000))
 
         # Snapshot stats
         # For some reason this value is returned as a string by the API.
+        endpoint = "/api/internal/stats/snapshot_storage/physical"
         r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/snapshot_storage/physical", auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+            RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/snapshot_storage/physical: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         # Grab the data, convert from string and convert to gigabytes (rounding up)
         rubrik_monitor.data.used = int(int(json.loads(r.text)["value"]) / (1000 * 1000 * 1000))
 
         # Average Storage Growth Per Day
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/average_storage_growth_per_day",
-            auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/stats/average_storage_growth_per_day"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/average_storage_growth_per_day: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         # Grab data and convert to gigabytes (rounding up)
         rubrik_monitor.data.avg_growth_per_day = int(json.loads(r.text)["bytes"] / (1000 * 1000 * 1000))
 
         # Physical Ingest per day (each stat covers a 24 hour day)
         # The values returned with -1day are different than when using -2day or higher (and they seem wrong)
         # So we pull in the values for -2day instead.
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/physical_ingest_per_day/time_series?range=-2day",
-            auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/stats/physical_ingest_per_day/time_series?range=-2day"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/physical_ingest_"
-                                              "per_day/time_series?range=-2day: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         # Grab data and convert to gigabytes (rounding up)
         rubrik_monitor.data.ingested_yesterday = int(json.loads(r.text)[-2]["stat"] / (1000 * 1000 * 1000))
         rubrik_monitor.data.ingested_today = int(json.loads(r.text)[-1]["stat"] / (1000 * 1000 * 1000))
 
         # Node Status
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/cluster/me/node", auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/cluster/me/node"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/cluster/me/node: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         status_json = json.loads(r.text)
         system_status = "OK"
         for x in range(0, status_json["total"]):
@@ -169,18 +195,17 @@ def generate_json(rubrik_monitor):
         rubrik_monitor.data.node_status = system_status
 
         # Current Streams
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/streams/count", auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/stats/streams/count"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/streams/count: " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         streams = json.loads(r.text)["count"]
 
         # IOPS/Throughput
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/cluster/me/io_stats?range=-10sec",
-            auth=HTTPBasicAuth(token, ''), verify=False, headers=headers)
+        endpoint = "/api/internal/cluster/me/io_stats?range=-10sec"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/cluster/me/io_stats?range=-10sec: " + r.text)
+            raise RubrikNotConnectedException("Error getting " +  endpoint + " " + r.text)
         iops_reads = json.loads(r.text)["iops"]["readsPerSecond"][0]["stat"]
         iops_writes = json.loads(r.text)["iops"]["writesPerSecond"][0]["stat"]
         throughput_reads = json.loads(r.text)["ioThroughput"]["readBytePerSecond"][0]["stat"]
@@ -190,13 +215,10 @@ def generate_json(rubrik_monitor):
         throughput_writes = int(throughput_writes / (1024 * 1024))  # Round up
 
         # PhysicalIngest (Live data)
-        r = rubrik_monitor.session.get(
-            RUBRIK_URL + "/api/v1/stats/physical_ingest/time_series?range=-10sec", auth=HTTPBasicAuth(token, ''),
-            verify=False,
-            headers=headers)
+        endpoint = "/api/internal/stats/physical_ingest/time_series?range=-10sec"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting /api/v1/stats/physical_"
-                                              "ingest/time_series?range=-10sec " + r.text)
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         ingest = json.loads(r.text)[0]["stat"]
         # convert byte_reads from Bytes to Megabytes
         ingest = int(ingest / (1024 * 1024))  # Round up
