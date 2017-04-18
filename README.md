@@ -7,25 +7,25 @@ Here is an older photo our installation.  We use some small ASUS chromeboxes alo
 
 ![Network Services Room](readme-images/location1.jpg)
 
-##Features
-###VMware vSphere ESX Host Monitoring
+## Features
+### VMware vSphere ESX Host Monitoring
 This module will talk to a VMware vSphere vCenter server using VMware APIs to get data about ESX hosts.  Items are sorted based on top CPU usage over a 30 minute period.
 
 ![ESX Host Gadget](readme-images/host.png)
 
-###VMware vSphere VM Monitoring
+### VMware vSphere VM Monitoring
 This module will talk to a VMware vSphere vCenter server using VMware APIs to get data about the top ESX VMs.  Items are sorted based on top CPU usage over a 30 minute period.
 
 ![VMware VM Gadget](readme-images/vm.png)
 
-###Network Bandwidth Monitoring
+### Network Bandwidth Monitoring
 
 This module demonstrates how to grab network bandwidth data.  In the first image, it is pulling in snmp data from a Palo Alto Firewall.  In the second image, it is pulling snmp data some VLANs on a Cisco Catalyst 6880 switch.
 
 ![Network Bandwidth Monitoring Gadget](readme-images/network.png)
 ![Network Bandwidth Monitoring Gadget #2](readme-images/network2.png)
 
-###SNMP Network Monitoring
+### SNMP Network Monitoring
 
 This module demonstrates how to grab SNMP table data.  In this case, it is pulling in ISDN values from a Cisco Voice Gateway to show the number of active phone calls.
 
@@ -33,32 +33,32 @@ This module demonstrates how to grab SNMP table data.  In this case, it is pulli
 
 
 
-###SNMP Temperature Gadget
+### SNMP Temperature Gadget
 
 This module talks to a couple different APC devices to pull in temperature, humidity, voltage and runtime data.
 
 ![SNMP Temperature Gadget](readme-images/temp.png)
 
-###Exchange Monitoring
+### Exchange Monitoring
 
 This module monitors a Microsoft Exchange server to display SMTP message totals for the day along with RPC and latency information (per CAS server).  Note that this code requires my [pyPerfmon](https://github.com/flakshack/pyPerfmon) app running on each Exchange server to be monitored.
 
 ![Exchange Monitoring Gadget](readme-images/exch.png)
 
-###Tintri Monitoring
+### Tintri Monitoring
 
 This module monitors a Tintri hybrid storage device using REST API calls.
 
 ![Tintri Monitoring Gadget](readme-images/tintri.png)
 
 
-###Rubrik Monitoring
+### Rubrik Monitoring
 
 This module monitors a Rubrik backup system using REST API calls.
 
 ![Rubrik Monitoring Gadget](readme-images/rubrik.png)
 
-###Nutanix Monitoring
+### Nutanix Monitoring
 
 This module monitors a Nutanix hyperconverged system using REST API calls.  The first image shows cluster monitoring.
 
@@ -69,7 +69,7 @@ The second Nutanix gadget shows per-VM storage monitoring.  It shows the top X V
 ![Nutanix VM Monitoring Gadget](readme-images/storage.png)
 
 
-###Weather
+### Weather
 
 This is a simple javascript-only weather gadget that pulls data from [OpenWeatherMap.org](http://openweathermap.org).  If you use this gadget, please sign up for a free APPID on that site and edit the source file to include your code.
 
@@ -77,13 +77,13 @@ This is a simple javascript-only weather gadget that pulls data from [OpenWeathe
 
 
 
-###Clock
+### Clock
 
 This is a great javascript-only clock from [YXKFW](http://www.yxkfw.com/?p=15718).
 
 ![Clock Gadget](readme-images/clock.png)
 
-###Twitter
+### Twitter
 
 ![Twitter Gadget](readme-images/twitter.png)
 
@@ -200,7 +200,7 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 
 
 
-##Major Change Log
+## Major Change Log
 2016-12-21
 * Changed python support to Python3.  Python2.x no longer supported.
 * Changed vmware access method from pysphere to pyvmomi (official VMware sdk)
@@ -241,7 +241,7 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 * HTML javascript updated to avoid hardcoded servername references.
 
 
-##Links to Projects used here
+## Links to Projects used here
 * [JQuery](http://jquery.com/)
 * [JQueryUI](http://jqueryui.com/)
 * [Easy Pie Chart](http://rendro.github.io/easy-pie-chart/)
