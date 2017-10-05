@@ -118,6 +118,8 @@ def update_host_data(server):
             "summary.overallStatus",
             "summary.quickStats.overallCpuUsage",
             "summary.quickStats.overallMemoryUsage",
+            "summary.hardware.cpuMhz",
+            "summary.hardware.numCpuCores",
             "hardware.memorySize"
         ]
         props = collect_properties(server["conn"], container_view,
@@ -133,7 +135,11 @@ def update_host_data(server):
         host_name = prop_set["name"]
         host_name = hostname_from_fqdn(host_name)       # trim out the domain name
         host_status = prop_set["summary.overallStatus"]
-        host_cpu = prop_set["summary.quickStats.overallCpuUsage"]
+        host_cpu_used = prop_set["summary.quickStats.overallCpuUsage"]
+        host_cpu_max = prop_set["summary.hardware.cpuMhz"]
+        host_cpu_cores = prop_set["summary.hardware.numCpuCores"]
+        host_cpu = int((host_cpu_used / host_cpu_max) * 100)
+        host_cpu = int((host_cpu_used / (host_cpu_max * host_cpu_cores)) * 100)
         host_ram = prop_set["summary.quickStats.overallMemoryUsage"]
         host_ram_max = prop_set["hardware.memorySize"]
         host_ram_max = int(host_ram_max / 1024 / 1024)      # Convert to Megabytes to match overallMemoryUsage
