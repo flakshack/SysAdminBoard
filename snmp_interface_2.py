@@ -18,7 +18,7 @@ __author__ = 'scott@flakshack.com (Scott Vintinner)'
 # =================================SETTINGS======================================
 MAX_DATAPOINTS = 30
 SAMPLE_INTERVAL = 60
-GRAPH_TITLE = "Internet Banwidth (Mbps)"
+GRAPH_TITLE = "Internet Bandwidth (Mbps)"
 
 # Standard SNMP OIDs
 # sysUpTime	    1.3.6.1.2.1.1.3.0    (this is hundreds of a second)
