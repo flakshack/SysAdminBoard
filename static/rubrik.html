@@ -17,14 +17,14 @@
 		table {
 		    border-collapse: collapse;
 		    table-layout:fixed;
-		    font-family: 'Roadgeek2014SeriesC', sans-serif;
+		    font-family: 'Roadgeek2014SeriesD', sans-serif;
 		    border-spacing: 4px;
             margin-top: 2px;
 		    width: 100%;
 		    -webkit-border-radius: 4px;
 		}
 		td {
-		    padding: 1px 10px 1px 10px;
+		    padding: 1px 1px 1px 1px;
 		    white-space: nowrap;
 		    overflow: hidden;
 		    text-overflow: clip;
@@ -40,7 +40,7 @@
         .detail_table td {
             text-align: left;
             font-size: 16px;
-            padding: 1px;
+            padding: 1px 0 0 8px;
         }
 
         .sparkline span {
@@ -58,6 +58,7 @@
             width: 60px;
             text-transform: none;
 			text-align:left;
+			font-size: 16px;
         }
         .stat_value {
 			width: 60px;
@@ -82,6 +83,7 @@
             display: inline-block;
             line-height: 105px;
             z-index: 2;
+			font-size: 16px;
         }
         #space_used_chart_value:after {
             content: 'gb';
@@ -96,6 +98,7 @@
     var iops_latest = 0;
     var space_used_latest = 0;
 	var space_used = 0;
+    var space_reserved = 0;
 
     function doAJAX() {
         var xmlHTTP = new XMLHttpRequest();
@@ -113,14 +116,22 @@
                     $('#errorText').css("display", "none");
                     $('#main_output').css("display", "block");
 
+                    // Note that Rubrik's snapshot statistic ignores reserved system space.  Because of this, the PIE chart on their
+                    // dashboard doesn't actually add up if you look at the numbers.  To see the actual space_used, we have to calculate 
+                    // the number using space_total - space_used - space_available
+                    space_used = stats['used'];  // global var so we can use in init()
+                    var space_available = stats['available']
+                    var space_total = stats['total'];
+                    space_reserved = space_total - space_used - space_available;   // global var so we can use in init()
+
                     var iops = stats.iops;
                     var throughput = stats['throughput'];
 					var ingest = stats['ingest'];
-                    space_used = stats['used'];	// global var so we can use in init()
-					var space_total = stats['total'];
+
 					var streams = stats['streams'];
 					var failure_count = stats['failure_count'];
-					var ingest_per_day = stats['ingest_per_day'];
+					var ingested_yesterday = stats['ingested_yesterday'];
+					var ingested_today = stats['ingested_today'];
 					var average_growth_per_day = stats['avg_growth_per_day'];
 					var node_status = stats['node_status'];
 
@@ -133,7 +144,7 @@
 					var streams_latest =  streams[streams.length - 1];
 
                     // Update the pie charts
-                    var space_used_percent = Math.round((space_used / RUBRIK_MAX_SPACE) * 100);
+                    var space_used_percent = Math.round(((space_used + space_reserved) / RUBRIK_MAX_SPACE) * 100);
                     $('#space_used_chart').data('easyPieChart').update(space_used_percent);
                     $('#space_used_chart_value').text = space_used;
 
@@ -192,9 +203,10 @@
                     $('#throughput_value').html(throughput_latest);
 					$('#ingest_value').html(ingest_latest);
                     $('#streams_value').html(streams_latest);
-                    $('#ingest_per_day_value').html(ingest_per_day);
+                    $('#ingested_yesterday_value').html(ingested_yesterday);
+					$('#ingested_today_value').html(ingested_today);
 					$('#average_growth_per_day_value').html(average_growth_per_day);
-					$('#node_status_value').html(node_status);
+					$('#space_reserved_value').html(space_reserved);
 					$('#failure_count_value').html(failure_count);
 					$('#space_used_test_value').html(space_used);
 
@@ -239,7 +251,8 @@
             lineCap: 'butt',
             easing: 'easeOutBounce',
             onStep: function(from, to, percent) {
-                $('#space_used_chart_value').text(space_used);
+                // Update the value in the middle of the pie chart each time the pie chart updates
+                $('#space_used_chart_value').text(space_used);                
             }
         });
 
@@ -255,17 +268,20 @@
 <tr>
     <tr><td colspan="2" class="header">RUBRIK</td></tr>
     <tr>
-        <td rowspan="4"><div class="chart_large" id="space_used_chart" data-percent="0"> <div id="space_used_chart_value"></div></div></td>
+        <td rowspan="5"><div class="chart_large" id="space_used_chart" data-percent="0"> <div id="space_used_chart_value"></div></div></div></td>
         <td class="stat_name">Avg Growth: <span id="average_growth_per_day_value"></span><span class="unit"> gb</span></td>
 	</tr>
 	<tr>
-		<td class="stat_name">24h Ingest: <span id="ingest_value"></span><span class="unit"> gb</span></td>
+		<td class="stat_name">In Yesterday: <span id="ingested_yesterday_value"></span><span class="unit"> gb</span></td>
+	</tr>
+	<tr>
+		<td class="stat_name">In Today: <span id="ingested_today_value"></span><span class="unit"> gb</span></td>
 	</tr>
 	<tr>
 		<td class="stat_name">Failed Tasks: <span id="failure_count_value"></span></td>
 	</tr>
 	<tr>
-		<td class="stat_name">System Status: <span id="node_status_value"></span></td>
+		<td class="stat_name">Reserved: <span id="space_reserved_value"></span><span class="unit"> gb</span></td>
 	</tr>
 	<tr>
 	    <td colspan="2">

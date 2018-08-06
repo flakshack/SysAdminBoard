@@ -1,0 +1,34 @@
+{
+    "_comment": "Note that OS X doesn't log anything to the console program < warning",
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "stream": "ext://sys.stdout"
+        },
+
+        "windows_eventlog": {
+            "class": "logging.handlers.NTEventLogHandler",
+            "level": "INFO",
+            "formatter": "simple",
+            "args": ["Pycharm"],
+            "appname": "Sysadminboard",
+            "dllname":"",
+            "logtype": "Application"
+        }
+    },
+
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console", "windows_eventlog"]
+    }
+}

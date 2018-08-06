@@ -131,6 +131,9 @@ def generate_json(monitor):
                 # Check to see if this VM is in our list and create one if not found
                 monitor.find_by_vm_id(vm_id, vm_name)
 
+            # Set the next full_update_time so we'll do this again in 1 hour
+            monitor.full_update_time = time.time()
+
         except Exception as error:
             # If we couldn't connect, set the session object to None and try again next time
             monitor.reset()
@@ -166,22 +169,33 @@ def generate_json(monitor):
 
         # Update the master stats with updated stats
         cpu = round((int(entity["hypervisor_cpu_usage_ppm"]) / 10000), 1)      # 1 decimal percent
-        ready = round((int(entity["hypervisor.cpu_ready_time_ppm"]) / 10000), 1)  # 1 decimal percent
+        # Check if CPU is 0 (computer was turned off) before checking the ready time (which won't exist)
+        if cpu == 0:
+            logger.debug("VM was turned off: " + vm.name)
+            vm.cpu = [0]
+            vm.ready = [0]
+            vm.relative_weight = 0.0
+            vm.last_updated = 0
 
-        # Store the list data in the VM object
-        if len(vm.cpu) == 0:
-            vm.cpu = [cpu]
-            vm.ready = [ready]
         else:
-            vm.cpu.append(cpu)
-            vm.ready.append(ready)
-        # If we already have the max number of datapoints in our list, delete the oldest item
-        if len(vm.cpu) >= MAX_DATAPOINTS:
-            del (vm.cpu[0])
-            del (vm.ready[0])
+            ready = round((int(entity["hypervisor.cpu_ready_time_ppm"]) / 10000), 1)  # 1 decimal percent
 
-        # Update ranking value of this VM to determine if we should show it
-        vm.update_relative_weight()
+            # Store the list data in the VM object
+            if len(vm.cpu) == 0:
+                vm.cpu = [cpu]
+                vm.ready = [ready]
+            else:
+                vm.cpu.append(cpu)
+                vm.ready.append(ready)
+            # If we already have the max number of datapoints in our list, delete the oldest item
+            if len(vm.cpu) >= MAX_DATAPOINTS:
+                del (vm.cpu[0])
+                del (vm.ready[0])
+
+            # Update ranking value of this VM to determine if we should show it
+            vm.update_relative_weight()
+            # Note the time when we updated this VM's stats
+            vm.last_updated = time.time()
 
     # ---------------------
     # Sort by relative weight

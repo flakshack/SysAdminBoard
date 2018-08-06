@@ -142,6 +142,9 @@ def generate_json(monitor):
                 # Check to see if this VM is in our list and create one if not found
                 monitor.find_by_vm_id(vm_id, vm_name)
 
+            # Set the next full_update_time so we'll do this again in 1 hour
+            monitor.full_update_time = time.time()
+
         except Exception as error:
             # If we couldn't connect, set the session object to None and try again next time
             monitor.reset()
@@ -198,6 +201,8 @@ def generate_json(monitor):
 
         # Update ranking value of this VM to determine if we should show it
         vm.update_relative_weight()
+        # Note the time when we updated this VM's stats
+        vm.last_updated = time.time()
 
     # ---------------------
     # Sort by relative weight
