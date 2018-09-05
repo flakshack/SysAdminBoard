@@ -201,6 +201,10 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 
 
 ## Major Change Log
+2018-08-06
+* Compatibility updates for Rubrik and Tintri modules to support latest REST API changes
+* Update to Nutanix module to include CVM chart.
+
 2016-12-21
 * Changed python support to Python3.  Python2.x no longer supported.
 * Changed vmware access method from pysphere to pyvmomi (official VMware sdk)

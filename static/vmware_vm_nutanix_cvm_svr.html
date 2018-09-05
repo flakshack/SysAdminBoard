@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" ><head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Cache-control" content="no-cache" />
+        <meta application-name="VMware VM Status" data-allows-resizing="YES" data-min-size="4,3" data-max-size="6,20" data-allows-scrolling="NO">
+
+    <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
+    <script type="text/javascript" src="/static/js/jquery.sparkline.min.js" ></script>
+
+    <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />
+	<style type="text/css">
+
+		table {
+		    border-collapse: collapse;
+		    font-family: 'Roadgeek2014SeriesD', sans-serif;
+		    text-transform: uppercase;
+		    border-spacing: 0px 4px;
+		    width: 100%;
+		    -webkit-border-radius: 4px;
+		    margin: 4px 4px 0px 4px;
+		}
+		td {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+		    text-align: left;
+		}
+
+        .status-gray {
+            background: url(/static/images/0unknown.png) no-repeat;
+            background-size: 16px;
+            width: 20px;
+        }
+		.status-green {
+			background: url(/static/images/1normal.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.status-yellow {
+			background: url(/static/images/2warning.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.status-red {
+			background: url(/static/images/3alert.png) no-repeat;
+			background-size: 16px;
+			width: 20px;
+		}
+		.sparkline {
+			padding: 0 2px 0 2px;
+            text-align: center;
+		}
+        .vm_name {
+            text-align: left;
+            margin-top: 2px;
+            width: 100px;
+            display:inline-block;
+        }
+
+        .value {
+            display: none;
+        }
+        .value:after {
+            content: ' mhz';
+            margin-left: 0.1em;
+            text-transform: none;
+            color: rgb(100,112,118);
+        }
+
+
+
+	</style>
+
+
+    <script type="text/javascript">
+
+    function doAJAX() {
+        var xmlHTTP = new XMLHttpRequest();
+
+        xmlHTTP.onreadystatechange=function() {             		// Executed when data is received
+            if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
+                ajaxdata = JSON.parse(xmlHTTP.responseText);
+                // incoming json format:
+                // { "vms": [{"status": 1, "host_cpu_mhz": 1999, "cpu_count": 4, "name": "MyServerName1", "cpu": [1539,1234,2221,1211]}, ...   ]}
+                // error json format:
+                // { "vms": [{"error": "details"}]}
+
+                vm_array = ajaxdata['vms'];
+                if ("error" in vm_array[0]) {
+                    $('#errorText').html(vm_array[0]["error"]);
+                    $('#errorText').css("display", "inline");
+                    $('#main_output').css("display", "none");
+                } else {
+                    $('#errorText').css("display", "none");
+                    $('#main_output').css("display", "block")
+                    // Loop through the results and update the HTML with the new values
+                    for (var i=0; i<vm_array.length; i++) {
+                        $('#vm' + i + '_name').html(vm_array[i]["name"]);
+
+                        // For the status, we change the class of the TD
+                        if (vm_array[i]["status"] == 1) {
+                            $('#vm' + i + '_status').removeClass("status-gray status-red status-yellow").addClass("status-green");
+                        } else {
+                            if (vm_array[i]["status"] == 2) {
+                                $('#vm' + i + '_status').removeClass("status-gray status-red status-green").addClass("status-yellow");
+                            } else {
+                                if (vm_array[i]["status"] == 3) {
+                                    $('#vm' + i + '_status').removeClass("status-gray status-green status-yellow").addClass("status-red");
+                                } else {
+                                    $('#vm' + i + '_status').removeClass("status-red status-green status-yellow").addClass("status-gray");
+                                }
+                            }
+                        }
+
+                        // Update sparkline to reflect latest CPU data
+
+                        $('#vm' + i + '_spark').sparkline(vm_array[i]["cpu"], {
+                            type: 'line',
+                            height: '20px',
+                            width: '100px',
+                            lineColor: '#aeb7bc',
+                            lineWidth: 1.5,
+                            fillColor: 'transparent',
+                            minSpotColor: 'transparent',
+                            maxSpotColor: 'transparent',
+                            spotRadius: 2
+                            }
+                        );
+
+                        // Update the current numeric value field
+                        var current_cpu = vm_array[i]["cpu"].pop();
+                        $('#vm' + i + '_value').html(current_cpu);
+                        $('#vm' + i + '_value').css("display", "inline");
+
+                        // Update the current percent
+                        var cpu_percent = (current_cpu / (vm_array[i]["host_cpu_mhz"] * vm_array[i]["cpu_count"]))
+                        var cpu_percent = Math.round(cpu_percent * 100);
+                        $('#vm' + i + '_percent').html(cpu_percent + '%');
+
+                    }
+                }
+
+            } else if (xmlHTTP.readyState==4 && xmlHTTP.status!=200)  {
+                $('#errorText').html('Unable to update data');
+                $('#errorText').css("display", "inline");
+                $('#main_output').css("display", "none");
+            }
+        }
+        // This GET URL must match the domain in the web browser of this page or it will not work
+        // so we use the page's location object to open the page from the same server
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/vmware_vm_nutanix_cvm_svr/ajax', true);
+        xmlHTTP.send(null);
+    }
+
+    function init()	{
+        // Change page background to black if the URL contains "?desktop", for debugging while developing on your computer
+        if (document.location.href.indexOf('desktop') > -1)	{
+            document.getElementById('vm_table').style.backgroundColor = 'black';
+        }
+
+        doAJAX()
+        // Call the refresh function every 60 seconds
+        var int=self.setInterval(function(){doAJAX()},60000);
+
+    }
+    </script>
+
+</head>
+
+<body onload="init()">
+<div id="errorText"></div>
+<div id="main_output"><table id="vm_table">
+<tbody>
+<tr><td colspan="5" class="header">SVR TOP CPU</td></tr>
+<tr>
+    <td id="vm0_status"></td>
+    <td id="vm0_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm0_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm0_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm0_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm1_status"></td>
+    <td id="vm1_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm1_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm1_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm1_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm2_status"></td>
+    <td id="vm2_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm2_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm2_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm2_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm3_status"></td>
+    <td id="vm3_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm3_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm3_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm3_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm4_status"></td>
+    <td id="vm4_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm4_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm4_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm4_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm5_status"></td>
+    <td id="vm5_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm5_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm5_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm5_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm6_status"></td>
+    <td id="vm6_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm6_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm6_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm6_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm7_status"></td>
+    <td id="vm7_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm7_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm7_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm7_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm8_status"></td>
+    <td id="vm8_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm8_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm8_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm8_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm9_status"></td>
+    <td id="vm9_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm9_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm9_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm9_value">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm10_status"></td>
+    <td id="vm10_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm10_spark" class="sparkline"></span></td>
+    <td><span class="percent" id="vm10_percent">&nbsp;</span></td>
+    <td><span class="value" id="vm10_value">&nbsp;</span></td>
+</tr>
+</tbody></table></div>
+</body></html>

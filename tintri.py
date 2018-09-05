@@ -15,9 +15,9 @@ from credentials import TINTRI_PASSWORD     # Login info now stored in credentia
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 # =================================SETTINGS======================================
-TINTRI_LOGIN_URL = "https://tintri/api/v310/session/login"
-TINTRI_STATS_SUMMARY = "https://tintri/api/v310/datastore/default/statsSummary"
-TINTRI_VMSTATS = "https://tintri/api/v310/vm/action=fetch?limit=10&sortedBy=IOPS&queryType=TOP_DOCS_BY_LATEST_TIME&sortOrder=DESC"
+TINTRI_LOGIN_URL = "https://tintri/api/v310/flex/session/login/action=create"
+TINTRI_STATS_SUMMARY = "https://tintri/api/v310/flex/datastore/default/statsSummary/action=fetch"
+TINTRI_VMSTATS = "https://tintri/v310/flex/vm/action=fetch?limit=10&sortedBy=IOPS&queryType=TOP_DOCS_BY_LATEST_TIME&sortOrder=DESC"
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30
 # ===============================================================================
@@ -45,7 +45,7 @@ class MonitorJSON:
 
 
 def output_message(message):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     output = json.dumps({"error": message}, indent=4)
     return output
 
@@ -58,6 +58,8 @@ def generate_json(tintri_monitor):
 
         login_payload = {
             "typeId": "com.tintri.api.rest.vcommon.dto.rbac.RestApiCredentials",
+            "newPassword": None,
+            "roles": None,
             "username": TINTRI_USER,
             "password": TINTRI_PASSWORD
         }
@@ -78,14 +80,14 @@ def generate_json(tintri_monitor):
 
         # Grab stats data from Tintri
         r = tintri_monitor.session.get(TINTRI_STATS_SUMMARY, verify=False, headers=headers)
-        summary_stats = (r.json())
+        summary_stats = (r.json())["tintriObjects"][0]
 
         # Save stat datapoints to our persistent monitor object
         tintri_monitor.data.iops.append(summary_stats["operationsTotalIops"])
         tintri_monitor.data.latency.append(summary_stats["latencyTotalMs"])
         tintri_monitor.data.throughput.append(summary_stats["throughputTotalMBps"])
         tintri_monitor.data.flash_hit.append(summary_stats["flashHitPercent"])
-        tintri_monitor.data.space_used.append(summary_stats["spaceUsedPhysicalGiB"])
+        tintri_monitor.data.space_used.append(summary_stats["spaceUsedGiB"])
 
         # If we already have the max number of datapoints in our list, delete the oldest item
         if len(tintri_monitor.data.iops) > MAX_DATAPOINTS:

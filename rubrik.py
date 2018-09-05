@@ -133,14 +133,14 @@ def generate_json(rubrik_monitor):
         r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
             raise RubrikNotConnectedException("Error getting " + endpoint + r.text)
-        chart_data = json.loads(r.text)[0]["chartData"]
+        chart_data = json.loads(r.text)[0]["dataColumns"]
         for column in chart_data:
             if column["label"] == "Succeeded":
-                rubrik_monitor.data.success_count = int(column["columnData"][0]["value"])
+                rubrik_monitor.data.success_count = int(column["dataPoints"][0]["value"])
             if column["label"] == "Failed":
-                rubrik_monitor.data.failure_count = int(column["columnData"][0]["value"])
+                rubrik_monitor.data.failure_count = int(column["dataPoints"][0]["value"])
             if column["label"] == "Running":
-                rubrik_monitor.data.running_count = int(column["columnData"][0]["value"])
+                rubrik_monitor.data.running_count = int(column["dataPoints"][0]["value"])
 
         # Storage stats
         # Note that "used" here includes system space.  We're more interested in snapshot space
@@ -202,24 +202,28 @@ def generate_json(rubrik_monitor):
         streams = json.loads(r.text)["count"]
 
         # IOPS/Throughput
-        endpoint = "/api/internal/cluster/me/io_stats?range=-10sec"
+        # Bug workaround:  for some reason range=-1min stopped working around Rubrik version 4.1.2-p0-2406
+        # Ranges -10min or higher seem to work fine, so we use that and change the index from zero to 4.
+        endpoint = "/api/internal/cluster/me/io_stats?range=-10min"
         r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting " +  endpoint + " " + r.text)
-        iops_reads = json.loads(r.text)["iops"]["readsPerSecond"][0]["stat"]
-        iops_writes = json.loads(r.text)["iops"]["writesPerSecond"][0]["stat"]
-        throughput_reads = json.loads(r.text)["ioThroughput"]["readBytePerSecond"][0]["stat"]
-        throughput_writes = json.loads(r.text)["ioThroughput"]["writeBytePerSecond"][0]["stat"]
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
+        iops_reads = json.loads(r.text)["iops"]["readsPerSecond"][9]["stat"]
+        iops_writes = json.loads(r.text)["iops"]["writesPerSecond"][9]["stat"]
+        throughput_reads = json.loads(r.text)["ioThroughput"]["readBytePerSecond"][9]["stat"]
+        throughput_writes = json.loads(r.text)["ioThroughput"]["writeBytePerSecond"][9]["stat"]
         # convert byte_reads from Bytes to Megabytes
         throughput_reads = int(throughput_reads / (1024 * 1024))  # Round up
         throughput_writes = int(throughput_writes / (1024 * 1024))  # Round up
 
         # PhysicalIngest (Live data)
-        endpoint = "/api/internal/stats/physical_ingest/time_series?range=-10sec"
+        # Bug workaround:  for some reason range=-1min stopped working around Rubrik version 4.1.2-p0-2406
+        # Ranges -10min or higher seem to work fine, so we use that and change the index from zero to 4.
+        endpoint = "/api/internal/stats/physical_ingest/time_series?range=-10min"
         r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
             raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
-        ingest = json.loads(r.text)[0]["stat"]
+        ingest = json.loads(r.text)[9]["stat"]
         # convert byte_reads from Bytes to Megabytes
         ingest = int(ingest / (1024 * 1024))  # Round up
 
@@ -250,7 +254,6 @@ def generate_json(rubrik_monitor):
         rubrik_monitor.json = json.dumps({"error": "Error getting data from Rubrik"}, indent=4)
         rubrik_monitor.token = None     # Reset login
         rubrik_monitor.session = None   # Reset HTTP session
-
 
 
 #
