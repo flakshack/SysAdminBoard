@@ -16,8 +16,7 @@ from cherrypy.process.plugins import Daemonizer         # will become active whe
 import os
 import json
 import logging.config
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import urllib3
 
 
 class SysAdminBoardModule:
@@ -101,8 +100,8 @@ except json.decoder.JSONDecodeError as e:
 
 logger = logging.getLogger("SysAdminBoard Main")
 
-logger.warn("Disabling SSL certificate verification log messages")
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+logger.warning("Disabling SSL certificate verification log messages")
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)     # Hide warnings about SSL certs
 
 
 # =====================================================================================================
