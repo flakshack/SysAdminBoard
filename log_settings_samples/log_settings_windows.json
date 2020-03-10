@@ -1,11 +1,13 @@
 {
-    "_comment": "Note that OS X doesn't log anything to the console program < warning",
+    "_comment1": "Log settings for Windows/PyCharm development, this should be replaced in production.",
+    "_comment2": "Your account must have Full Control to the registry key:",
+    "_comment3": "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\EventLog\n\nApplication",
     "version": 1,
     "disable_existing_loggers": false,
     "formatters": {
         "simple": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        },
+        }
     },
 
     "handlers": {
