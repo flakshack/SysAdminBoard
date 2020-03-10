@@ -29,14 +29,12 @@ class MonitorJSON:
         self.edge2_previous_receive_total = 0
         self.edge2_send_datapoints = []
         self.edge2_receive_datapoints = []
-        self.outlook1_rpc_avg_latency = []
-        self.outlook1_rpc_active_users = []
-        self.outlook1_rpc = 0
-        self.outlook1_rpc_total = []
-        self.outlook2_rpc_avg_latency = []
-        self.outlook2_rpc_active_users = []
-        self.outlook2_rpc_total = []
-        self.outlook2_rpc = 0
+        self.server1_avg_latency = []
+        self.server1_active_users = []
+        self.server1_ops = []
+        self.server2_avg_latency = []
+        self.server2_active_users = []
+        self.server2_ops = []
         self.datetime = datetime(2000, 1, 1)
 
         self.json = json.dumps({
@@ -48,12 +46,12 @@ class MonitorJSON:
             "edge2_receive_datapoints": [0],
             "edge2_send_total": "--",
             "edge2_receive_total": "--",
-            "outlook1_rpc_avg_latency": [],
-            "outlook1_rpc_active_users": [],
-            "outlook1_rpc_total": [],
-            "outlook2_rpc_avg_latency": [],
-            "outlook2_rpc_active_users": [],
-            "outlook2_rpc_total": []
+            "server1_avg_latency": [],
+            "server1_active_users": [],
+            "server1_ops": [],
+            "server2_avg_latency": [],
+            "server2_active_users": [],
+            "server2_ops": []
         })
 
 
@@ -148,68 +146,50 @@ def generate_json(perf_monitor):
     if len(perf_monitor.edge2_receive_datapoints) >= MAX_DATAPOINTS:
         del(perf_monitor.edge2_receive_datapoints[0])
 
-    # CAS Perf Data Format: {"rpc_avg_latency": 7.0, "rpc_active_users": 22.0, "rpc_total": 30777797.0}
-    # ====================OUTLOOK1=====================
+    # Exch 2016+ {"active_users": 62.0, "average_latency": 2.0, "operations_per_second": 5.9956325622022675}
+    # ====================server1=====================
     try:
-        response = urlopen('http://outlook1:8002')
+        response = urlopen('http://exmbx1.rbh.local:4901')
         html = (response.read()).decode('utf-8')
-        logger.debug("outlook1:" + html)
+        logger.debug("server1:" + html)
         data = json.loads(html)
     except Exception as error:
-        logger.error("Error getting data from outlook1: " + str(error))
-        perf_monitor.json = json.dumps({"error": "Error with outlook1: " + str(error)})
+        logger.error("Error getting data from server1: " + str(error))
+        perf_monitor.json = json.dumps({"error": "Error with server1: " + str(error)})
         return
 
     # Add the datapoints
-    perf_monitor.outlook1_rpc_active_users.append(int(data["rpc_active_users"]))
-    perf_monitor.outlook1_rpc_avg_latency.append(int(data["rpc_avg_latency"]))
-
-    # RPC count is a total, so convert it to deltas
-    current_rpc_total = int(data["rpc_total"])
-    if perf_monitor.outlook1_rpc == 0:
-        perf_monitor.outlook1_rpc_total = [0]
-        perf_monitor.outlook1_rpc = current_rpc_total
-    else:
-        rpc_delta = current_rpc_total - perf_monitor.outlook1_rpc
-        perf_monitor.outlook1_rpc_total.append(rpc_delta)
-        perf_monitor.outlook1_rpc = current_rpc_total
+    perf_monitor.server1_active_users.append(int(data["active_users"]))
+    perf_monitor.server1_avg_latency.append(int(data["average_latency"]))
+    perf_monitor.server1_ops.append(int(data["operations_per_second"]))
 
     # If we've reached the max datapoints, delete the oldest
-    if len(perf_monitor.outlook1_rpc_active_users) >= MAX_DATAPOINTS:
-        del(perf_monitor.outlook1_rpc_active_users[0])
-        del(perf_monitor.outlook1_rpc_avg_latency[0])
-        del(perf_monitor.outlook1_rpc_total[0])
+    if len(perf_monitor.server1_active_users) >= MAX_DATAPOINTS:
+        del(perf_monitor.server1_active_users[0])
+        del(perf_monitor.server1_avg_latency[0])
+        del(perf_monitor.server1_ops[0])
 
-    # ====================OUTLOOK2=====================
+    # ====================server2=====================
     try:
-        response = urlopen('http://outlook2:8001')
+        response = urlopen('http://exmbx2.rbh.local:4901')
         html = (response.read()).decode('utf-8')
-        logger.debug("outlook2:" + html)
+        logger.debug("server2:" + html)
         data = json.loads(html)
     except Exception as error:
-        logger.error("Error getting data from: outlook2: " + str(error))
-        perf_monitor.json = json.dumps({"error": "Error with outlook2: " + str(error)})
+        logger.error("Error getting data from: server2: " + str(error))
+        perf_monitor.json = json.dumps({"error": "Error with server2: " + str(error)})
         return
 
     # Add the datapoints
-    perf_monitor.outlook2_rpc_active_users.append(int(data["rpc_active_users"]))
-    perf_monitor.outlook2_rpc_avg_latency.append(int(data["rpc_avg_latency"]))
-
-    # RPC count is a total, so convert it to deltas
-    current_rpc_total = int(data["rpc_total"])
-    if perf_monitor.outlook2_rpc == 0:
-        perf_monitor.outlook2_rpc_total = [0]
-        perf_monitor.outlook2_rpc = current_rpc_total
-    else:
-        rpc_delta = current_rpc_total - perf_monitor.outlook2_rpc
-        perf_monitor.outlook2_rpc_total.append(rpc_delta)
-        perf_monitor.outlook2_rpc = current_rpc_total
+    perf_monitor.server2_active_users.append(int(data["active_users"]))
+    perf_monitor.server2_avg_latency.append(int(data["average_latency"]))
+    perf_monitor.server2_ops.append(int(data["operations_per_second"]))
 
     # If we've reached the max datapoints, delete the oldest
-    if len(perf_monitor.outlook2_rpc_active_users) >= MAX_DATAPOINTS:
-        del(perf_monitor.outlook2_rpc_active_users[0])
-        del(perf_monitor.outlook2_rpc_avg_latency[0])
-        del(perf_monitor.outlook2_rpc_total[0])
+    if len(perf_monitor.server2_active_users) >= MAX_DATAPOINTS:
+        del(perf_monitor.server2_active_users[0])
+        del(perf_monitor.server2_avg_latency[0])
+        del(perf_monitor.server2_ops[0])
 
     # Create the JSON string for output
     perf_monitor.json = json.dumps({
@@ -221,12 +201,12 @@ def generate_json(perf_monitor):
         "edge2_receive_datapoints": perf_monitor.edge2_receive_datapoints,
         "edge2_send_total": perf_monitor.edge2_send_total,
         "edge2_receive_total": perf_monitor.edge2_receive_total,
-        "outlook1_rpc_avg_latency": perf_monitor.outlook1_rpc_avg_latency,
-        "outlook1_rpc_active_users": perf_monitor.outlook1_rpc_active_users,
-        "outlook1_rpc_total": perf_monitor.outlook1_rpc_total,
-        "outlook2_rpc_avg_latency": perf_monitor.outlook2_rpc_avg_latency,
-        "outlook2_rpc_active_users": perf_monitor.outlook2_rpc_active_users,
-        "outlook2_rpc_total": perf_monitor.outlook2_rpc_total
+        "server1_avg_latency": perf_monitor.server1_avg_latency,
+        "server1_active_users": perf_monitor.server1_active_users,
+        "server1_ops": perf_monitor.server1_ops,
+        "server2_avg_latency": perf_monitor.server2_avg_latency,
+        "server2_active_users": perf_monitor.server2_active_users,
+        "server2_ops": perf_monitor.server2_ops
     })
 
     logger.debug(perf_monitor.json)
