@@ -21,7 +21,6 @@ from credentials import RUBRIK_PASSWORD  # Login info now stored in credentials.
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 # =================================SETTINGS======================================
-RUBRIK_URL = "https://rubrik"
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30
 # ===============================================================================
@@ -194,51 +193,59 @@ def generate_json(rubrik_monitor):
                 system_status = status_json["data"][x]["status"]
         rubrik_monitor.data.node_status = system_status
 
-        # Current Streams
+        # Current Streams (API returns a single value)
         endpoint = "/api/internal/stats/streams/count"
         r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
         if r.status_code != 200:
             raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
         streams = json.loads(r.text)["count"]
-
-        # IOPS/Throughput
-        # Bug workaround:  for some reason range=-1min stopped working around Rubrik version 4.1.2-p0-2406
-        # Ranges -10min or higher seem to work fine, so we use that and change the index from zero to 4.
-        endpoint = "/api/internal/cluster/me/io_stats?range=-10min"
-        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
-        if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
-        iops_reads = json.loads(r.text)["iops"]["readsPerSecond"][9]["stat"]
-        iops_writes = json.loads(r.text)["iops"]["writesPerSecond"][9]["stat"]
-        throughput_reads = json.loads(r.text)["ioThroughput"]["readBytePerSecond"][9]["stat"]
-        throughput_writes = json.loads(r.text)["ioThroughput"]["writeBytePerSecond"][9]["stat"]
-        # convert byte_reads from Bytes to Megabytes
-        throughput_reads = int(throughput_reads / (1024 * 1024))  # Round up
-        throughput_writes = int(throughput_writes / (1024 * 1024))  # Round up
-
-        # PhysicalIngest (Live data)
-        # Bug workaround:  for some reason range=-1min stopped working around Rubrik version 4.1.2-p0-2406
-        # Ranges -10min or higher seem to work fine, so we use that and change the index from zero to 4.
-        endpoint = "/api/internal/stats/physical_ingest/time_series?range=-10min"
-        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
-        if r.status_code != 200:
-            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
-        ingest = json.loads(r.text)[9]["stat"]
-        # convert byte_reads from Bytes to Megabytes
-        ingest = int(ingest / (1024 * 1024))  # Round up
-
-        # Save stat datapoints to our persistent monitor object
-        rubrik_monitor.data.iops.append(iops_reads + iops_writes)
-        rubrik_monitor.data.throughput.append(throughput_reads + throughput_writes)
-        rubrik_monitor.data.ingest.append(ingest)
         rubrik_monitor.data.streams.append(streams)
-
         # If we already have the max number of datapoints in our list, delete the oldest item
         if len(rubrik_monitor.data.iops) > MAX_DATAPOINTS:
-            del (rubrik_monitor.data.iops[0])
-            del (rubrik_monitor.data.throughput[0])
-            del (rubrik_monitor.data.ingest[0])
             del (rubrik_monitor.data.streams[0])
+
+        # IOPS/Throughput
+        # https://support.rubrik.com/s/article/000002778
+        # Rubrik changed how the API works so that IO stats are only filled in 5 minute increments and not
+        # in real time.
+        # Rather than trying to read the most recent value and add it to our own array (which would be most
+        # efficient, we'll just read their array each time and replace ours.
+
+        endpoint = "/api/internal/cluster/me/io_stats?range=-30min"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
+        if r.status_code != 200:
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
+
+        rubrik_monitor.data.iops = []
+        for i in range(len(json.loads(r.text)["iops"]["readsPerSecond"])):
+            if i <= 25:   # Drop the last results since they are all zero
+                iops_reads = json.loads(r.text)["iops"]["readsPerSecond"][i]["stat"]
+                iops_writes = json.loads(r.text)["iops"]["writesPerSecond"][i]["stat"]
+                rubrik_monitor.data.iops.append(iops_reads + iops_writes)
+
+        rubrik_monitor.data.throughput = []
+        for i in range(len(json.loads(r.text)["ioThroughput"]["readBytePerSecond"])):
+            if i <= 25:  # Drop the last results since they are all zero
+                throughput_reads = json.loads(r.text)["ioThroughput"]["readBytePerSecond"][i]["stat"]
+                throughput_writes = json.loads(r.text)["ioThroughput"]["writeBytePerSecond"][i]["stat"]
+                # convert byte_reads from Bytes to Megabytes
+                throughput_reads = int(throughput_reads / (1024 * 1024))  # Round up
+                throughput_writes = int(throughput_writes / (1024 * 1024))  # Round up
+                rubrik_monitor.data.throughput.append(throughput_reads + throughput_writes)
+
+        # PhysicalIngest (Live data)
+        # Same issues with IO Stats above
+        endpoint = "/api/internal/stats/physical_ingest/time_series?range=-30min"
+        r = rubrik_monitor.session.get(RUBRIK_URL + endpoint, verify=False, headers=headers)
+        if r.status_code != 200:
+            raise RubrikNotConnectedException("Error getting " + endpoint + " " + r.text)
+        rubrik_monitor.data.ingest = []
+        for i in range(len(json.loads(r.text))):
+            if i <= 25:  # Drop the last results since they are all zero
+                ingest = json.loads(r.text)[i]["stat"]
+                # convert byte_reads from Bytes to Megabytes
+                ingest = int(ingest / (1024 * 1024))  # Round up
+                rubrik_monitor.data.ingest.append(ingest)
 
         # Format our output as json under the stats name
         output = json.dumps({"stats": rubrik_monitor.data.__dict__})
