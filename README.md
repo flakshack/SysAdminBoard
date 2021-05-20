@@ -117,22 +117,35 @@ will load the vmware_host.py data module, setup the webserver to serve the front
 If you browse to the webserver, it will display a list of loaded modules with links to display the output appropriately (HTML and AJAX).  Note that the webserver loads on port 8080 by default unless you make the iptables changes below to redirect from port 80.
 
 ## Simple Linux Configuration
-Here are some directions for a base CentOS 6 Linux server install.  (Note that these directions were updated and simplified on 12/21/2016 to account for the upgrade to Python3).
+Here are some directions for a base CentOS 8 Linux server install.  (I know CentOS 8 is EOL soon, but I made this change before they announced they were killing it.  I'll post again once we change to Rocky Linux.)
 
-Install Python3 (note that gcc and python34-devel are required for pysnmp)
+
+
+Install Python3 
 
 ```
-yum install epel-release
-yum install python34 python-pip python34-devel gcc
+dnf install epel-release
+dnf install python3
+```
+
+Create sbpython account and assign owner rights to the static folder.  The webserver will run as this user account, so it needs rights to this folder.  All other files will be owned by root.  Copy all files to /opt/sysadminboard.  Note that the default log_settings.json file is set for debugging on Mac OS X.  Replace it with the CentOS version in log_settings_samples.
+Be sure to mark the credentials file so other accounts cannot access it.
+
+```
+mkdir -p /opt/sysadminboard/static
+adduser sbpython
+chown -R sbpython:sbpython /opt/sysadminboard/static
+chmod 700 /opt/sysadminboard/credentials.py
 ```
 
 Create a virtual environment in /opt/sysadminboard-ve to store the required python modules (so they don't intermingle with the normal OS python modules.)
 
 ```
-pip install -U pip
-pip install virtualenv
+pip3 install -U pip
+pip3 install virtualenv
 cd /opt
 virtualenv -p python3 sysadminboard-ve
+
 ```
 
 Now that the virtual environment is available, use this command anytime you want to test or run pip
@@ -158,39 +171,29 @@ pip install requests
 pip install pysnmp
 ```
 
-Copy all files to /opt/sysadminboard.  Note that the default log_settings.json file is set for debugging on Mac OS X.  Replace it with the CentOS version in log_settings_samples.
+Troubleshooting
 
-Create sbpython account and assign owner rights to the static folder.  The webserver will run as this user account, so it needs rights to this folder.  All other files will be owned by root.  Be sure to mark the credentials file so other accounts cannot access it.
+Logs will appear in the journal (check /var/log/messages if you have rsyslog installed, or use journalctl). To increase the logging level, edit log_settings.json and replace INFO with DEBUG.
 
-```
-adduser sbpython
-chown -R sbpython:sbpython /opt/sysadminboard/static
-chmod 700 /opt/sysadminboard/credentials.py
-```
 
-There are sample syslog and logrotate files that you can copy to your system to facilitate logging.
-
-```
-cp /opt/sysadminboard/centos_install/rsyslog.d/sysadminboard.conf /etc/rsyslog.d
-service rsyslog restart
-cp /opt/sysadminboard/centos_install/logrotate.d/sysadminboard /etc/logrotate.d
-```
 
 Setup Service
-There is a simple init.d script in the source init.d directory.  Copy the sysadminboard file to /etc/init.d/ on server
+There is a simple systemd service in the centos_install directory.  Copy the sysadminboard.service file to /etc/systemd/system on server
 
 ```
-cp /opt/sysadminboard/centos_install/init.d/sysadminboard /etc/init.d
-chmod +x /etc/init.d/sysadminboard
-chkconfig sysadminboard on
+cp /opt/sysadminboard/centos_install/systemd/sysadminboard.service /etc/systemd/system
+systemctl enable sysadminboard
+
 ```
 
 You can run the following commands now to stop or start the service.
 
 ```
-service sysadminboard start
-service sysadminboard stop
-service sysadminboard status
+systemctl stop sysadminboard
+systemctl start sysadminboard
+systemctl restart sysadminboard
+systemctl status sysadminboard
+
 ```
 
 Note that you use the deactivate command to exit a virtual environment.  The source...activate and deactivate commands are not needed when starting the service, only when testing.
@@ -203,10 +206,13 @@ deactivate
 Add these rules to your firewall to redirect from port 8080 to port 80:
 
 ```
- iptables -A INPUT -p tcp --dport 80 -j ACCEPT
- iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
-# Redirect port 80 to port 8080
- iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+firewall-cmd --list-all
+firewall-cmd --add-service=http
+firewall-cmd --add-service=https
+firewall-cmd --add-port=8080/tcp
+firewall-cmd --add-forward-port=port=80:proto=tcp:toport=8080
+firewall-cmd --runtime-to-permanent
+
 ```
 
 
@@ -222,6 +228,7 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 * Updated webserver.py to provide a friendlier home page
 * Updated webserver.py to fix static file caching issue
 * Added favicon
+* Updated README.MD to move install directions from CENTOS 6 to CENTOS 8
 
 Note about Tintri support:  I don't have one anymore, so the code may stop working.
 
