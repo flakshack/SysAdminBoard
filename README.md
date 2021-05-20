@@ -31,13 +31,17 @@ This module demonstrates how to grab SNMP table data.  In this case, it is pulli
 
 ![SNMP Network Monitoring Gadget](readme-images/snmp.png)
 
-
-
 ### SNMP Temperature Gadget
 
 This module talks to a couple different APC devices to pull in temperature, humidity, voltage and runtime data.
 
 ![SNMP Temperature Gadget](readme-images/temp.png)
+
+### PRTG Monitoring Gadget
+
+This module talks to a PRTG monitoring server using their rest-api instead of talking directly to devices.  There are two modules, one that uses the basic interface bandwidth and the other uses channels.
+
+![PRTG Monitoring Gadget](readme-images/prtg.png)
 
 ### Exchange Monitoring
 
@@ -50,6 +54,13 @@ This module monitors a Microsoft Exchange server to display SMTP message totals 
 This module monitors a Tintri hybrid storage device using REST API calls.
 
 ![Tintri Monitoring Gadget](readme-images/tintri.png)
+
+### NetApp Monitoring
+
+This module monitors a NetApp FAS storage device using REST API calls.
+
+![NetApp FAS Monitoring Gadget](readme-images/netapp.png)
+
 
 
 ### Rubrik Monitoring
@@ -201,6 +212,20 @@ Add these rules to your firewall to redirect from port 8080 to port 80:
 
 
 ## Major Change Log
+2021-05-20
+* Added a module to monitor NetApp FAS storage
+* Added a module to monitor PRTG (uses PRTG API to pull data about any monitored device)
+* Fix for TLS1 support removed from vSphere 6.7
+* Fix for HTML files with bad Doctype
+* Changed colors of graphs to use IBM colorblind safe colors
+* Added CPU-ready charts for Nutanix
+* Updated webserver.py to provide a friendlier home page
+* Updated webserver.py to fix static file caching issue
+* Added favicon
+
+Note about Tintri support:  I don't have one anymore, so the code may stop working.
+
+
 2018-08-06
 * Compatibility updates for Rubrik and Tintri modules to support latest REST API changes
 * Update to Nutanix module to include CVM chart.
