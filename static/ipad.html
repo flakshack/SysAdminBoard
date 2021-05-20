@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-control" content="no-cache">
+<title>RBH Statusboard</title>
+<style>
+
+  body {
+    background-color: black;
+    margin:0;
+    padding: 0;
+  }
+  iframe {
+    border:none;
+  }
+  /* Panel sizes are in 64 bit increments -6 bits for padding */
+  .panel4x3 {
+    height:246px;
+    width:186px;        
+  }  
+  .panel4x4 {
+    height:246px;
+    width:250px;        
+  }
+  .panel4x5 {    
+    height:246px;
+    width:314px;         
+  }
+  .panel4x6 {
+    height:246px;
+    width:378px;
+  }  
+  .panel4x7 {
+    height:246px;
+    width:442px; 
+  }  
+  .panel4x8 {
+    height:246px;
+    width: 506px;
+  }      
+  div {
+    border-radius: 6px;    
+    border-width: 1px;
+    border-style:solid;
+    border-color: #333333 #333333 #222222 #333333;
+    float:left; 
+    margin: 0px; 
+    background: linear-gradient(#222222, black);  
+  }
+  table {
+      border-collapse: collapse;
+      table-layout:fixed;        
+      border-spacing: 0px; 
+      width: 100%;
+      margin: 0px;
+      padding:0px;
+  }
+  td {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+  }  
+
+
+</style>
+</head>
+<body>
+<table>
+<tr>  
+  <td class="panel4x4"><div><iframe class="panel4x4" src="msexchange.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="vmware_vm.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="vmware_host.html"></iframe></div></td>
+</tr>
+<tr>
+  <td class="panel4x4"><div><iframe class="panel4x4" src="tintri.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="snmp_interface_3.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="snmp_interface_4.html"></iframe></div></td>
+</tr>
+<tr>
+  <td class="panel4x4"><div><iframe class="panel4x4" src="snmp_environmental_1.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="snmp_interface_2.html"></iframe></div></td>
+  <td class="panel4x6"><div><iframe class="panel4x6" src="snmp_interface_1.html"></iframe></div></td>
+</tr>
+</table></body>
+</html>

@@ -12,11 +12,11 @@ themselves first.
 
 import cherrypy
 from cherrypy.lib.static import serve_file
-from cherrypy.process.plugins import Daemonizer         # will become active when Daemonizer is uncommented below
 import os
 import json
 import logging.config
-import urllib3
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
 class SysAdminBoardModule:
@@ -71,9 +71,17 @@ class MyWebServer(object):
     # The following HTML will be displayed if someone browses to this webserver directly.
     @cherrypy.expose
     def index(self, **params):
+        hostname=cherrypy.request.headers['Host']
         html = """<html><head><title>SysAdminBoard</title></head><body>
             <p>See: <a href="https://github.com/flakshack/SysAdminBoard">https://github.com/flakshack/SysAdminBoard</a>
             </p>
+            <p><h2>Available Dashboards</h2></p>
+            <ul><li><a href="/static/1920x1080.html">http://""" + hostname + """/static/1920x1080.html</a></li>
+            <li><a href="/static/1080x1920.html">http://""" + hostname + """/static/1080x1920.html</a></li>
+            <li><a href="/static/ns1.html">http://""" + hostname + """/static/ns1.html</a></li>
+            <li><a href="/static/ns2.html">http://""" + hostname + """/static/ns2.html</a></li>
+            </ul>
+            
             <p>Here is a list of active modules and data sources:</p>"""
 
         for sb_module in SysAdminBoardModule.all_modules:
@@ -100,8 +108,8 @@ except json.decoder.JSONDecodeError as e:
 
 logger = logging.getLogger("SysAdminBoard Main")
 
-logger.warning("Disabling SSL certificate verification log messages")
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)     # Hide warnings about SSL certs
+logger.warn("Disabling SSL certificate verification log messages")
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 # =====================================================================================================
@@ -112,7 +120,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)     # Hide w
 #
 #  ====================================================================================================
 # Specify the modules you want to execute.  (put a # comment in front of modules to disable them).
-# SysAdminBoardModule('sample')
 
 SysAdminBoardModule('sample')
 # SysAdminBoardModule('msexchange')
@@ -123,21 +130,24 @@ SysAdminBoardModule('sample')
 # SysAdminBoardModule('snmp_interface_5')
 # SysAdminBoardModule('snmp_interface_6')
 # SysAdminBoardModule('snmp_environmental_1')
+# SysAdminBoardModule('prtg_channel_1')
+# SysAdminBoardModule('prtg_interface_1')
+# SysAdminBoardModule('prtg_interface_2')
 # SysAdminBoardModule('tintri')
 # SysAdminBoardModule('rubrik')
 # SysAdminBoardModule('vmware_host')
 # SysAdminBoardModule('vmware_view_host')
 # SysAdminBoardModule('vmware_view_vm')
 # SysAdminBoardModule('vmware_vm')
-# SysAdminBoardModule('helpdesk_byuser')
-# SysAdminBoardModule('helpdesk_bycategory')
 # SysAdminBoardModule('nutanix_vdi')
 # SysAdminBoardModule('nutanix_svr')
 # SysAdminBoardModule('nutanix_vm_vdi')
 # SysAdminBoardModule('nutanix_vm_svr')
-# SysAdminBoardModule('nutanix_vm_cpu_ready')
+# SysAdminBoardModule('nutanix_svr_vm_cpu_ready')
+# SysAdminBoardModule('nutanix_vdi_vm_cpu_ready')
 # SysAdminBoardModule('vmware_vm_nutanix_cvm_vdi')
 # SysAdminBoardModule('vmware_vm_nutanix_cvm_svr')
+# SysAdminBoardModule('netapp')
 
 
 # =====================================================================================================
@@ -170,12 +180,16 @@ CONFIG = {
     },
     '/static': {
         'tools.staticdir.on': True,
-        'tools.staticdir.dir': STATIC_DIR
+        'tools.staticdir.dir': STATIC_DIR,
+        'tools.expires.on': True,
+        'tools.expires.secs': 3600  # expire in an hour
     },
+    '/favicon.ico': {
+        'tools.staticfile.on': True,
+        'tools.staticfile.filename': '/opt/sysadminboard/static/favicon.ico'
+    }
 }
 
-# =================Disable this line when debugging==============
-Daemonizer(cherrypy.engine).subscribe()                         # When we start, do it as a daemon process
 # ===============================================================
 logger.info("Starting up SysAdminBoard web server...")
 cherrypy.log.access_log.propagate = False                        # Disable access logging

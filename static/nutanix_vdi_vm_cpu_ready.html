@@ -35,33 +35,25 @@
             display:inline-block;
         }
 
-        .iops {
+        .ready {
             display: none;
         }
-        .iops:after {
-            content: ' iops';
+        .ready:after {
+            content: ' % rdy';
             margin-left: 0.1em;
             text-transform: none;
             color: rgb(100,112,118);
         }
-        .throughput {
+        .cpu {
             display: none;
         }
-        .throughput:after {
-            content: ' MBps';
+        .cpu:after {
+            content: '% cpu';
             margin-left: 0.1em;
             text-transform: none;
             color: rgb(100,112,118);
         }
-        .latency {
-            display: none;
-        }
-        .latency:after {
-            content: ' ms';
-            margin-left: 0.1em;
-            text-transform: none;
-            color: rgb(100,112,118);
-        }
+
 
 	</style>
 
@@ -75,7 +67,7 @@
             if (xmlHTTP.readyState==4 && xmlHTTP.status==200) {     // Was the request successful?
                 ajaxdata = JSON.parse(xmlHTTP.responseText);
                 // incoming json format:
-                // {"vms": [{"iops": [1, 0, 27, 763, 168, 588], "name": "VMA-NAME", "throughput": [0.05, 0.01, 2.07, 208.16, 26.91, 117.8], "latency": [1.0, 0.0, 1.1, 6.4, 2.6, 1.8]},
+                // {"vms": [{"ready": [16.9, 18.4, 18.0, 13.2, 23.9, 19.2, 19.8, 15.5, 10.9, 16.4, 16.8, 16.6, 16.7], "cpu": [38.8, 36.3, 38.3, 32.7, 47.8, 45.1, 46.2, 37.9, 28.6, 35.1, 33.8, 36.0, 36.2], "name": "UNKNOWN"},
                 // error json format:
                 // { "vms": [{"error": "details"}]}
 
@@ -87,14 +79,23 @@
                 } else {
                     $('#errorText').css("display", "none");
                     $('#main_output').css("display", "block")
+
+					// Loop through the results and remove any VMs named "NTNX*"
+					for (var i=0; i<vm_array.length; i++) {
+						if ((vm_array[i]["name"]).search("NTNX") != -1) {
+							vm_array.splice(i, 1);
+							i=-1;	// since we changed the array, restart for loop
+						}
+					}
                     // Loop through the results and update the HTML with the new values
                     for (var i=0; i<vm_array.length; i++) {
+
                         $('#vm' + i + '_name').html(vm_array[i]["name"]);
 
 
                         // Update sparkline to reflect latest CPU data
 
-                        $('#vm' + i + '_spark').sparkline(vm_array[i]["iops"], {
+                        $('#vm' + i + '_spark').sparkline(vm_array[i]["ready"], {
                             type: 'line',
                             height: '20px',
                             width: '100px',
@@ -108,18 +109,13 @@
                         );
 
                         // Update the current numeric value field
-                        var current_iops = vm_array[i]["iops"].pop();
-                        $('#vm' + i + '_iops').html(current_iops);
-                        $('#vm' + i + '_iops').css("display", "inline");
+                        var current_ready = vm_array[i]["ready"].pop();
+                        $('#vm' + i + '_ready').html(current_ready);
+                        $('#vm' + i + '_ready').css("display", "inline");
 
-                        var current_througput = vm_array[i]["throughput"].pop();
-                        $('#vm' + i + '_throughput').html(current_througput);
-                        $('#vm' + i + '_throughput').css("display", "inline");
-
-                        var current_latency = vm_array[i]["latency"].pop();
-                        $('#vm' + i + '_latency').html(current_latency);
-                        $('#vm' + i + '_latency').css("display", "inline");
-
+                        var current_cpu = vm_array[i]["cpu"].pop();
+                        $('#vm' + i + '_cpu').html(current_cpu);
+                        $('#vm' + i + '_cpu').css("display", "inline");
                     }
                 }
 
@@ -131,7 +127,7 @@
         }
         // This GET URL must match the domain in the web browser of this page or it will not work
         // so we use the page's location object to open the page from the same server
-        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/nutanix_vm_vdi/ajax', true);
+        xmlHTTP.open("GET", location.protocol + '//' + location.host + '/nutanix_vdi_vm_cpu_ready/ajax', true);
         xmlHTTP.send(null);
     }
 
@@ -154,83 +150,78 @@
 <div id="errorText"></div>
 <div id="main_output"><table id="vm_table">
 <tbody>
-<tr><td colspan="5" class="header">VDI TOP Storage IO</td></tr>
+<tr><td colspan="4" class="header">VDI CPU Ready</td></tr>
 <tr>
     <td id="vm0_name" class="vm_name">&nbsp;</td>
     <td><span id="vm0_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm0_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm0_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm0_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm0_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm0_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm1_name" class="vm_name">&nbsp;</td>
     <td><span id="vm1_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm1_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm1_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm1_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm1_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm1_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm2_name" class="vm_name">&nbsp;</td>
     <td><span id="vm2_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm2_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm2_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm2_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm2_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm2_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm3_name" class="vm_name">&nbsp;</td>
     <td><span id="vm3_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm3_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm3_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm3_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm3_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm3_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm4_name" class="vm_name">&nbsp;</td>
     <td><span id="vm4_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm4_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm4_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm4_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm4_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm4_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm5_name" class="vm_name">&nbsp;</td>
     <td><span id="vm5_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm5_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm5_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm5_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm5_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm5_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm6_name" class="vm_name">&nbsp;</td>
     <td><span id="vm6_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm6_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm6_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm6_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm6_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm6_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm7_name" class="vm_name">&nbsp;</td>
     <td><span id="vm7_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm7_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm7_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm7_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm7_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm7_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm8_name" class="vm_name">&nbsp;</td>
     <td><span id="vm8_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm8_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm8_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm8_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm8_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm8_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm9_name" class="vm_name">&nbsp;</td>
     <td><span id="vm9_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm9_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm9_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm9_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm9_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm9_cpu">&nbsp;</span></td>
 </tr>
 <tr>
     <td id="vm10_name" class="vm_name">&nbsp;</td>
     <td><span id="vm10_spark" class="sparkline"></span></td>
-    <td><span class="iops" id="vm10_iops">&nbsp;</span></td>
-    <td><span class="throughput" id="vm10_throughput">&nbsp;</span></td>
-	<td><span class="latency" id="vm10_latency">&nbsp;</span></td>
+    <td><span class="ready" id="vm10_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm10_cpu">&nbsp;</span></td>
+</tr>
+<tr>
+    <td id="vm11_name" class="vm_name">&nbsp;</td>
+    <td><span id="vm11_spark" class="sparkline"></span></td>
+    <td><span class="ready" id="vm11_ready">&nbsp;</span></td>
+    <td><span class="cpu" id="vm11_cpu">&nbsp;</span></td>
 </tr>
 
 </tbody></table></div>

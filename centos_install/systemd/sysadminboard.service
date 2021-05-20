@@ -1,0 +1,20 @@
+[Unit]
+Description=Sysadminboard
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=sbpython
+Group=sbpython
+Restart=on-failure
+WorkingDirectory=/opt/sysadminboard
+ExecStart=/opt/sysadminboard-ve/bin/python3 /opt/sysadminboard/webserver.py --serve-in-foreground
+StandardOutput=journal
+StandardError=journal
+
+
+[Install]
+WantedBy=multi-user.target
+# If you want to use $(systemctl [start|stop|restart] statusboard) instead of sysadminboard
+Alias=statusboard.service

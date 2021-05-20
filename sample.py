@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """sample.py - This is a sample module to demonstrate the basic functionality of the SysAdminBoard.
 Running this python file by itself will produce a simple JSON data output.  When you launch this file
-via the webserver.py script (along with sample.html), it will present a web page and an ajax interface at:
+via the webserver.py script (along with sample.html), it will present a web page and an ajax interface
+that you can load into the sysadminboard iPad App.
 
 http://yourcomputer/sample
 http://yourcomputer/sample/ajax

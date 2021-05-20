@@ -1,11 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="Cache-control" content="no-cache">
-<title>SysAdminBoard</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>RBH Statusboard</title>
 <style>
-
+  
   body {
     background-color: black;
     margin:0;
@@ -55,22 +54,22 @@
 <body><!-- At 1344x768, there are 21x12 panel blocks (64 pixels) -->
 <!-- Row 1 -->
 <div><iframe class="panel4x4" src="snmp_environmental_1.html"></iframe></div>
-<div><iframe class="panel4x4" src="tintri.html"></iframe></div>
-<div><iframe class="panel6x4" src="snmp_interface_4.html"><!-- replication wan --></iframe></div>
-<div><iframe class="panel6x4" src="snmp_interface_3.html"><!-- wan --></iframe></div>
+<div><iframe class="panel4x4" src="netapp.html"></iframe></div>
+<div><iframe class="panel6x4" src="prtg_interface_2.html"><!-- replication wan --></iframe></div>
+<div><iframe class="panel6x4" src="prtg_interface_1.html"><!-- wan --></iframe></div>
 
 <!-- Row 2 -->
 <div><iframe class="panel6x4" src="snmp_interface_5.html"><!-- pri --></iframe></div>
 <div><iframe class="panel8x4" src="snmp_interface_6.html"><!-- vlan --></iframe></div>
 
-<div><iframe class="panel6x4" src="snmp_interface_2.html"><!-- internet --></iframe></div>
+<div><iframe class="panel6x4" src="prtg_channel_1.html"><!-- internet --></iframe></div>
 
 
 <!-- Row 3 -->
 <div><iframe class="panel6x4" src="snmp_interface_1.html"><!-- floor --></iframe></div>
 <div><iframe class="panel4x4" src="msexchange.html"></iframe></div>
 <div><iframe class="panel4x4" src="rubrik.html"></iframe></div>
-<div><iframe class="panel4x4" src="twitter.html"></iframe></div>
+<div><iframe class="panel6x4" src="nutanix_svr_vm_cpu_ready.html"></iframe></div>
 
 <!--
 

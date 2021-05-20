@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
+"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
 
 
 
@@ -116,7 +116,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     statusbar_output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     output = json.dumps(statusbar_output)
     return output

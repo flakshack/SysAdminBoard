@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
+"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
 
 
 
@@ -18,7 +18,7 @@ __author__ = 'scott@flakshack.com (Scott Vintinner)'
 # =================================SETTINGS======================================
 MAX_DATAPOINTS = 30
 SAMPLE_INTERVAL = 60
-GRAPH_TITLE = "Internet Banwidth (Mbps)"
+GRAPH_TITLE = "Internet (Mbps)"
 
 # Standard SNMP OIDs
 # sysUpTime	    1.3.6.1.2.1.1.3.0    (this is hundreds of a second)
@@ -34,10 +34,14 @@ GRAPH_TITLE = "Internet Banwidth (Mbps)"
 # uptime_oid:  This is the SNMP OID for the device's uptime (so we know what the time was when we measured the counter)
 # name:  This is the name of the device as it will appear on the graph
 DEVICES = (
-    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.500010000",
-     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "Internet RX"},
-    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.500010000",
-     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "Internet TX"},
+    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.6",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "PA1 RX"},
+    {"ip": "pa1", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.6",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "PA1 TX"},
+    {"ip": "pa2", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.6.6",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "PA2 RX"},
+    {"ip": "pa2", "community": SNMP_COMMUNITY, "oid": "1.3.6.1.2.1.31.1.1.1.10.6",
+     "uptime_oid": "1.3.6.1.2.1.1.3.0", "name": "PA2 TX"}     
 )
 # ================================================================================
 
@@ -117,7 +121,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     statusbar_output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     output = json.dumps(statusbar_output)
     return output

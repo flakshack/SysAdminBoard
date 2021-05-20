@@ -2,6 +2,7 @@
 """vmware_vm - Exports JSON files with CPU and RAM data for VMware VMs
 
 # Requires VMware Python SDK: pyvmomi
+# https://code.google.com/p/pysphere/
 # pip install pyvmomi
 
 """
@@ -97,7 +98,7 @@ def connect_vcenter():
     """This function will connect to the specified vCenter server.  If it fails, it will retry"""
     logger = logging.getLogger(__name__)
     # Disable certificate verification otherwise it will error
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
     ssl_context.verify_mode = ssl.CERT_NONE
 
     server_instance = None

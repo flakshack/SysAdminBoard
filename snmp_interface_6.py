@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
+"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
 
 # In this monitor, we want to aggregate TX + RX and redundant uplinks into a single value
 
@@ -37,12 +37,11 @@ DEVICE_IP = "cisco-clt-core"
 DEVICE_SNMP = SNMP_COMMUNITY
 DEVICE_UPTIME_OID = "1.3.6.1.2.1.1.3.0"
 AGGREGATE_INTERFACES = (
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.859", "1.3.6.1.2.1.31.1.1.1.10.859"], "name": "Server"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.861", "1.3.6.1.2.1.31.1.1.1.10.861"], "name": "Horizon"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.865", "1.3.6.1.2.1.31.1.1.1.10.865"], "name": "DMZ"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.871", "1.3.6.1.2.1.31.1.1.1.10.871"], "name": "IntWiFi"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.864", "1.3.6.1.2.1.31.1.1.1.10.864"], "name": "GuestWiFi"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.860", "1.3.6.1.2.1.31.1.1.1.10.860"], "name": "Voice"}
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.855", "1.3.6.1.2.1.31.1.1.1.10.855"], "name": "Byod"},     # vlan32
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.856", "1.3.6.1.2.1.31.1.1.1.10.856"], "name": "iPhone"},   # vlan36
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.857", "1.3.6.1.2.1.31.1.1.1.10.857"], "name": "Trusted"},  # vlan40
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.858", "1.3.6.1.2.1.31.1.1.1.10.858"], "name": "Guest"},    # vlan44
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.877", "1.3.6.1.2.1.31.1.1.1.10.877"], "name": "WiredGuest"}    # vlan199
 )
 # ================================================================================
 
@@ -121,7 +120,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     return json.dumps(output)
 

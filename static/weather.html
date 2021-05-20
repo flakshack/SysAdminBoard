@@ -1,9 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta http-equiv="Cache-control" content="no-cache">
-
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     
     <link rel="stylesheet" href="/static/css/style.css" media="screen" type="text/css" />   
@@ -105,7 +103,7 @@
         // Grab the current temperature from OpenWeatherMap.org
         $.ajax({
             type: 'GET',
-            url: 'http://api.openweathermap.org/data/2.5/weather?id=4460243&units=imperial&APPID=yourAPPIDhere',
+            url: 'http://api.openweathermap.org/data/2.5/weather?id=4460243&units=imperial&APPID=efcacae02c705fa08a847ad472d410d0',
             dataType: 'jsonp',
             success: function(data) {
                 // Swap the error display if it was previously visible.
@@ -126,7 +124,7 @@
         // Grab the forecast from OpenWeatherMap.org
         $.ajax({
             type: 'GET',
-            url: 'http://api.openweathermap.org/data/2.5/forecast/daily?id=4460243&units=imperial&cnt=4&APPID=yourAPPIDhere',
+            url: 'http://api.openweathermap.org/data/2.5/forecast/daily?id=4460243&units=imperial&cnt=4&APPID=efcacae02c705fa08a847ad472d410d0',
             dataType: 'jsonp',
             success: function(data) {
                 // Swap the error display if it was previously visible.
@@ -185,7 +183,8 @@
 </head>
     
 <body onload="init()" id="body"><div id="errorText"></div>
-<div id="main_output"><table id="main_table">
+<div id="main_output">
+    <table id="main_table">
     <tr><td colspan="4" class="header">Charlotte</td></tr>
     <tr><td colspan="4" id="current_temp">00&deg;</td></tr>
     <tr>
@@ -194,5 +193,6 @@
         <td class="forecast" id="forecast2"></td>
         <td class="forecast" id="forecast3"></td>
     </tr>
-</table>    
+    </table>
+</div>
 </body></html>

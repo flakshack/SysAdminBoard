@@ -21,6 +21,7 @@ from credentials import RUBRIK_PASSWORD  # Login info now stored in credentials.
 __author__ = 'scott@flakshack.com (Scott Vintinner)'
 
 # =================================SETTINGS======================================
+RUBRIK_URL = "https://<IP of your Rubrik>"
 SAMPLE_INTERVAL = 60
 MAX_DATAPOINTS = 30
 # ===============================================================================

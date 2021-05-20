@@ -1,10 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta http-equiv="Cache-control" content="no-cache">
-        <meta application-name="SNMP Environmental" data-allows-resizing="YES">
-
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     <script type="text/javascript" src="/static/js/jquery.easing.min.js" ></script>    
     <script src="/static/js/jquery.easypiechart.min.js"></script>
@@ -55,8 +52,8 @@
         .chart_large {
             position: relative;
             display: inline-block;
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             text-align: center;
         }
         .chart_large canvas {
@@ -66,14 +63,14 @@
         }        
         .degree_large {
             display: inline-block;
-            line-height: 105px;
+            line-height: 86px;
             z-index: 2;
-            font-size: 30px;
+            font-size: 28px;
         }
         .degree_large:after {
             content: '\00B0 F';
             margin-left: 0.1em;
-            font-size: 26px; 
+            font-size: 22px; 
         }
 
         
@@ -100,14 +97,21 @@
                     $('#clt_humidity').html(envdata['clt_humidity']);
                     $('#clt_load').html(envdata['clt_load']);
                     $('#clt_runtime').html(envdata['clt_runtime']);
+
+                    $('#ral_temp').html(envdata['ral_temp']);
+                    $('#ral_humidity').html(envdata['ral_humidity']);
+                    var ral_load = ((1.5 * envdata['ral_load'])/100).toFixed(1);        // calculate kva from percent load (1.5 kva unit)
+                    $('#ral_load').html(ral_load);
+                    $('#ral_runtime').html(envdata['ral_runtime']);
+
                     $('#rh_temp').html(envdata['rh_temp']);
                     $('#rh_humidity').html(envdata['rh_humidity']);
-                    var rh_load = ((5 * envdata['rh_load'])/100).toFixed(1);        // calculate kva from percent load (5 kva unit)
+                    var rh_load = ((1.5 * envdata['rh_load'])/100).toFixed(1);        // calculate kva from percent load (1.5 kva unit)
                     $('#rh_load').html(rh_load);
                     $('#rh_runtime').html(envdata['rh_runtime']);
                     $('#tri_temp').html(envdata['tri_temp']);
                     $('#tri_humidity').html(envdata['tri_humidity']);
-                    var tri_load = ((5 * envdata['tri_load'])/100).toFixed(1);      // calculate kva from percent load (5 kva unit)
+                    var tri_load = ((1.5 * envdata['tri_load'])/100).toFixed(1);      // calculate kva from percent load (1.5 kva unit)
                     $('#tri_load').html(tri_load);                                
                     $('#tri_runtime').html(envdata['tri_runtime']);
 
@@ -154,8 +158,8 @@
             },
             trackColor: '#222222',
             scaleColor: false,
-            size: 100,
-            lineWidth: 20,       
+            size: 80,
+            lineWidth: 10,       
             lineCap: 'butt',
             easing: 'easeOutBounce',
             onStep: function(from, to, percent) {
@@ -172,8 +176,8 @@
             },
             trackColor: '#222222',
             scaleColor: false,
-            size: 100,
-            lineWidth: 20,       
+            size: 80,
+            lineWidth: 10,       
             lineCap: 'butt',
             easing: 'easeOutBounce',
             onStep: function(from, to, percent) {
@@ -189,8 +193,8 @@
 <body onload="init()"><div id="errorText"></div>
 <div id="main_output"><table id="env_table">
 <tr>
-    <td><span class="chart_large" id="cold_aisle_chart" data-percent="0"> <span class="degree_large" id="cold_aisle_value"></span></span><h2>Cold Aisle</h1></td>
-    <td><span class="chart_large" id="hot_aisle_chart" data-percent="0"> <span class="degree_large" id="hot_aisle_value"></span></span><h2>Hot Aisle</h1></td>
+    <td><span class="chart_large" id="cold_aisle_chart" data-percent="0"> <span class="degree_large" id="cold_aisle_value"></span></span><h2>CLT Cold Aisle</h2></td>
+    <td><span class="chart_large" id="hot_aisle_chart" data-percent="0"> <span class="degree_large" id="hot_aisle_value"></span></span><h2>CLT Hot Aisle</h2></td>
 </tr>
 <tr>
     <td colspan="2">
@@ -209,6 +213,13 @@
                 <td><span id="clt_load">--</span>kva</td>
                 <td><span id="clt_runtime">--</span>min</td>
             </tr>
+            <tr>
+                <td>RAL</td>
+                <td><span id="ral_temp">--</span>&deg;F</td>
+                <td><span id="ral_humidity">--</span>%</td>
+                <td><span id="ral_load">--</span>kva</td>
+                <td><span id="ral_runtime">--</span>min</td>
+            </tr>            
             <tr>
                 <td>RH</td>
                 <td><span id="rh_temp">--</span>&deg;F</td>

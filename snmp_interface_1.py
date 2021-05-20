@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
+"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
 
 # In this monitor, we want to aggregate TX + RX and redundant uplinks into a single value
 
@@ -32,15 +32,15 @@ GRAPH_TITLE = "Floor VLAN Bandwidth (Mbps)"
 # oid:  This is the SNMP OID interface counter we'll be measuring.
 # uptime_oid:  This is the SNMP OID for the device's uptime (so we know what the time was when we measured the counter)
 # name:  This is the name of the device as it will appear on the graph
-DEVICE_IP = "cisco-clt-core"
+DEVICE_IP = "clt-core"
 DEVICE_SNMP = SNMP_COMMUNITY
 DEVICE_UPTIME_OID = "1.3.6.1.2.1.1.3.0"
 AGGREGATE_INTERFACES = (
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.875", "1.3.6.1.2.1.31.1.1.1.10.875"], "name": "16"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.879", "1.3.6.1.2.1.31.1.1.1.10.879"], "name": "17"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.883", "1.3.6.1.2.1.31.1.1.1.10.883"], "name": "18"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.887", "1.3.6.1.2.1.31.1.1.1.10.887"], "name": "19"},
-    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.891", "1.3.6.1.2.1.31.1.1.1.10.891"], "name": "20"}
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.863", "1.3.6.1.2.1.31.1.1.1.10.863"], "name": "16"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.867", "1.3.6.1.2.1.31.1.1.1.10.867"], "name": "17"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.871", "1.3.6.1.2.1.31.1.1.1.10.871"], "name": "18"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.875", "1.3.6.1.2.1.31.1.1.1.10.875"], "name": "19"},
+    {"oid": ["1.3.6.1.2.1.31.1.1.1.6.879", "1.3.6.1.2.1.31.1.1.1.10.879"], "name": "20"}
 )
 # ================================================================================
 
@@ -119,7 +119,7 @@ def calculate_bps(current_sample_octets, current_sample_time, historical_sample_
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     return json.dumps(output)
 

@@ -3,6 +3,7 @@
 
 
 # Requires VMware Python SDK: pyvmomi
+# https://code.google.com/p/pysphere/
 # pip install pyvmomi
 
 """
@@ -82,8 +83,9 @@ def hostname_from_fqdn(fqdn):
 def connect_vcenter(vcenter_server, vcenter_username, vcenter_password):
     """This function will connect to the specified vCenter server."""
     logger = logging.getLogger(__name__)
+
     # Disable certificate verification otherwise it will error
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
     ssl_context.verify_mode = ssl.CERT_NONE
 
     server_instance = None

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""snmp_interface: module called to generate SNMP monitoring data as JSON for display on the dashboard.
+"""snmp_interface: module called to generate SNMP monitoring data formatted for use with StatusBoard iPad App
 
 """
 from pysnmp.entity.rfc3413.oneliner import cmdgen
@@ -81,7 +81,7 @@ def get_snmp(device, community, snmp_oid):
 
 
 def output_message(message, detail):
-    """This function will output an error message formatted in JSON to display on the dashboard"""
+    """This function will output an error message formatted in JSON to display on the StatusBoard app"""
     statusbar_output = {"graph": {"title": GRAPH_TITLE, "error": {"message": message, "detail": detail}}}
     output = json.dumps(statusbar_output)
     return output

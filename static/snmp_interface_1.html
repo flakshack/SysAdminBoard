@@ -1,10 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta http-equiv="Cache-control" content="no-cache">
-        <meta application-name="Bandwidth Monitoring" data-allows-resizing="YES">
-
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script type="text/javascript" src="/static/js/jquery-2.1.1.min.js" ></script>
     <script type="text/javascript" src="/static/js/Chart.min.js" ></script>
 
@@ -36,7 +33,6 @@
             float: right;
             padding-top: 4px;
         }
-
         #myGraph {
             padding-left: 2px;
         }
@@ -52,14 +48,11 @@
     var MAX_DATAPOINTS = 30;
 
     var GRAPH_COLORS = [
-        "rgb(255,198,0)",   //Yellow
-        "rgb(0,108,230)",   //Blue
-        "rgb(0,186,0)",     //Green
-        "rgb(155,0,194)",   //Purple
-        "rgb(0,159,153)",   //OtherBlue
-        "rgb(252,88,181)",  //Pink
-        "rgb(255,48,0)",    //Red
-        "rgb(252,107,0)",   //Orange
+        "rgb(100,143,255)", //Blue  (IBM Colorblind Pallette)
+        "rgb(255,176,0)",   //Yellow
+        "rgb(254,97,0)",    //Orange
+        "rgb(120,94,240)",  //Purple
+        "rgb(220,38,127)",  //Pink
         "rgb(174,183,188)", //Light Gray
         "rgb(100,112,188)", //Dark Gray
     ]
@@ -243,9 +236,9 @@
 <body onload="init()"><div id="errorText"></div>
 <div id="main_output"><table id="main_table">
 <tr>
-    <tr><td><div class="header" id="title">Loading Graph...</div><div id="legend"></td></tr>
+    <tr><td><div class="header" id="title">Loading Graph...</div><div id="legend"></div></td></tr>
     <tr>
-        <td><canvas id="myGraph" width="350" height="220"></canvas></td>        
+        <td><canvas id="myGraph" width="350" height="220"></canvas></td>
     </tr>
 </tr>
 </table></div>

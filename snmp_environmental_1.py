@@ -46,6 +46,7 @@ def generate_json(snmp_monitor):
 
     try:
         # ===============CLT NetBotz1 data
+        logger.debug("Getting: CLT NetBotz1 data")
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
             cmdgen.CommunityData(SNMP_COMMUNITY),
             cmdgen.UdpTransportTarget(('10.5.50.235', 161)),
@@ -55,7 +56,7 @@ def generate_json(snmp_monitor):
         )
 
         if error_indication or error_status:
-            logger.warn("CLT NetBotz1: " + str(error_indication))
+            logger.warning("CLT NetBotz1: " + str(error_indication))
             clt_temperature = "XX"
             hot_aisle = "XX"
             clt_humidity = "XX"
@@ -65,6 +66,7 @@ def generate_json(snmp_monitor):
             clt_humidity = int(var_binds[2][1])
 
         # ===============CLT NetBotz2 data
+        logger.debug("Getting: CLT NetBotz2 data")
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
             cmdgen.CommunityData(SNMP_COMMUNITY),
             cmdgen.UdpTransportTarget(('10.5.50.236', 161)),
@@ -72,12 +74,13 @@ def generate_json(snmp_monitor):
         )
 
         if error_indication or error_status:
-            logger.warn("CLT NetBotz2: " + str(error_indication))
+            logger.warning("CLT NetBotz2: " + str(error_indication))
             cold_aisle = "XX"
         else:
             cold_aisle = int(var_binds[0][1])
 
         # ============ CLT Symmetra data
+        logger.debug("Getting: CLT Symmetra data")
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
             cmdgen.CommunityData(SNMP_COMMUNITY),
             cmdgen.UdpTransportTarget(("10.5.50.230", 161)),
@@ -87,7 +90,7 @@ def generate_json(snmp_monitor):
             "1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.3"         # UPS Load Phase 3
         )
         if error_indication or error_status:
-            logger.warn("CLT Symmetra: " + str(error_indication))
+            logger.warning("CLT Symmetra: " + str(error_indication))
             clt_runtime = "XX"
             clt_load = "XX"
         else:
@@ -102,48 +105,73 @@ def generate_json(snmp_monitor):
             clt_load = round(clt_load, 1)
 
         # ===============RH APC SMARTUPS  (Must be SNMPv1)
+        logger.debug("Getting: RH APC SMARTUPS data")
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
             cmdgen.CommunityData(SNMP_COMMUNITY, mpModel=0),       # mpModel=0 for SNMPv1
-            cmdgen.UdpTransportTarget(("10.3.1.240", 161)),
-            "1.3.6.1.4.1.318.1.1.10.1.3.3.1.4.1",               # Temperature
-            "1.3.6.1.4.1.318.1.1.10.1.3.3.1.6.1",               # Humidity
-            "1.3.6.1.4.1.318.1.1.1.4.2.3.0",                    # UPS Load Percent
-            "1.3.6.1.4.1.318.1.1.1.2.2.3.0"                     # UPS Runtime
+            cmdgen.UdpTransportTarget(("apc-rh-0.rbh.local", 161)),
+            "1.3.6.1.2.1.33.1.2.3.0",                             # UPS Runtime
+            "1.3.6.1.2.1.33.1.4.4.1.5.1",                         # UPS Output Load Percent
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1",                 # Humidity
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.4.1"                  # Temperature
         )
         if error_indication or error_status:
-            logger.warn("RH APC: " + str(error_indication))
+            logger.warning("TRI APC: " + str(error_indication))
             rh_temperature = "XX"
             rh_humidity = "XX"
             rh_load = "XX"
             rh_runtime = "XX"
         else:
-            rh_temperature = int(var_binds[0][1])
-            rh_humidity = int(var_binds[1][1])
-            rh_load = int(var_binds[2][1])
-            rh_runtime = int(var_binds[3][1]) / 100 / 60        # Convert TimeTicks to Seconds to minutes
-            rh_runtime = int(rh_runtime)
+            rh_runtime = int(var_binds[0][1])
+            rh_load = int(var_binds[1][1])
+            rh_humidity = int(var_binds[2][1])
+            rh_temperature = int(var_binds[3][1])
+            rh_temperature = int(1.8 * rh_temperature) + 32
 
         # ===============TRI APC SMARTUPS  (Must be SNMPv1)
+        logger.debug("Getting: TRI APC SMARTUPS data")
         error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
-            cmdgen.CommunityData("n8bez5b9rdeabik", mpModel=0),       # mpModel=0 for SNMPv1
-            cmdgen.UdpTransportTarget(("10.10.1.13", 161)),
-            "1.3.6.1.4.1.318.1.1.10.1.3.3.1.4.1",               # Temperature
-            "1.3.6.1.4.1.318.1.1.10.1.3.3.1.6.1",               # Humidity
-            "1.3.6.1.4.1.318.1.1.1.4.2.3.0",                    # UPS Load Percent
-            "1.3.6.1.4.1.318.1.1.1.2.2.3.0"                     # UPS Runtime
+            cmdgen.CommunityData(SNMP_COMMUNITY, mpModel=0),       # mpModel=0 for SNMPv1
+            cmdgen.UdpTransportTarget(("apc-tri-0.rbh.local", 161)),
+            "1.3.6.1.2.1.33.1.2.3.0",                             # UPS Runtime
+            "1.3.6.1.2.1.33.1.4.4.1.5.1",                         # UPS Output Load Percent
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1",                 # Humidity
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.4.1"                  # Temperature
         )
         if error_indication or error_status:
-            logger.warn("TRI APC: " + str(error_indication))
+            logger.warning("TRI APC: " + str(error_indication))
             tri_temperature = "XX"
             tri_humidity = "XX"
             tri_load = "XX"
             tri_runtime = "XX"
         else:
-            tri_temperature = int(var_binds[0][1])
-            tri_humidity = int(var_binds[1][1])
-            tri_load = int(var_binds[2][1])
-            tri_runtime = int(var_binds[3][1]) / 100 / 60        # Convert TimeTicks to Seconds to minutes
-            tri_runtime = int(tri_runtime)
+            tri_runtime = int(var_binds[0][1])
+            tri_load = int(var_binds[1][1])
+            tri_humidity = int(var_binds[2][1])
+            tri_temperature = int(var_binds[3][1])
+            tri_temperature = int(1.8 * tri_temperature) + 32
+
+        # ===============RAL APC SMARTUPS  (Must be SNMPv1)
+        logger.debug("Getting: RAL APC SMARTUPS data")
+        error_indication, error_status, error_index, var_binds = cmd_gen.getCmd(
+            cmdgen.CommunityData(SNMP_COMMUNITY, mpModel=0),       # mpModel=0 for SNMPv1
+            cmdgen.UdpTransportTarget(("apc-ral-0.rbh.local", 161)),
+            "1.3.6.1.2.1.33.1.2.3.0",                             # UPS Runtime
+            "1.3.6.1.2.1.33.1.4.4.1.5.1",                         # UPS Output Load Percent
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.6.1",                 # Humidity
+            "1.3.6.1.4.1.318.1.1.10.2.3.2.1.4.1"                  # Temperature
+        )
+        if error_indication or error_status:
+            logger.warning("RAL APC: " + str(error_indication))
+            ral_temperature = "XX"
+            ral_humidity = "XX"
+            ral_load = "XX"
+            ral_runtime = "XX"
+        else:
+            ral_runtime = int(var_binds[0][1])
+            ral_load = int(var_binds[1][1])
+            ral_humidity = int(var_binds[2][1])
+            ral_temperature = int(var_binds[3][1])
+            ral_temperature = int(1.8 * ral_temperature) + 32
 
         # =========== Create Dictionary for JSON output
         snmp_data = {
@@ -157,6 +185,10 @@ def generate_json(snmp_monitor):
             "tri_humidity": tri_humidity,
             "tri_load": tri_load,
             "tri_runtime": tri_runtime,
+            "ral_temp": ral_temperature,
+            "ral_humidity": ral_humidity,
+            "ral_load": ral_load,
+            "ral_runtime": ral_runtime,
             "rh_temp": rh_temperature,
             "rh_humidity": rh_humidity,
             "rh_load": rh_load,
