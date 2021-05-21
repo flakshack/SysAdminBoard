@@ -103,7 +103,7 @@
         // Grab the current temperature from OpenWeatherMap.org
         $.ajax({
             type: 'GET',
-            url: 'http://api.openweathermap.org/data/2.5/weather?id=4460243&units=imperial&APPID=efcacae02c705fa08a847ad472d410d0',
+            url: 'http://api.openweathermap.org/data/2.5/weather?id=4460243&units=imperial&APPID=<Your OpenWeather API Key Goes Here>',
             dataType: 'jsonp',
             success: function(data) {
                 // Swap the error display if it was previously visible.
@@ -124,7 +124,7 @@
         // Grab the forecast from OpenWeatherMap.org
         $.ajax({
             type: 'GET',
-            url: 'http://api.openweathermap.org/data/2.5/forecast/daily?id=4460243&units=imperial&cnt=4&APPID=efcacae02c705fa08a847ad472d410d0',
+            url: 'http://api.openweathermap.org/data/2.5/forecast/daily?id=4460243&units=imperial&cnt=4&APPID=<Your OpenWeather API Key Goes Here>',
             dataType: 'jsonp',
             success: function(data) {
                 // Swap the error display if it was previously visible.
